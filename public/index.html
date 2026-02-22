@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Envoy — Dashboard</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <h1>Envoy</h1>
+      <p>Career Intelligence</p>
+    </div>
+    <a href="/" class="nav-link active">&#9632; Dashboard</a>
+    <a href="/onboarding.html" class="nav-link">&#9675; Onboarding</a>
+    <a href="/feed.html" class="nav-link">&#9632; Job Feed</a>
+    <a href="/brief.html" class="nav-link">&#9632; Briefs</a>
+    <a href="/materials.html" class="nav-link">&#9632; Materials</a>
+    <a href="/network.html" class="nav-link">&#9632; Network</a>
+    <a href="/pipeline.html" class="nav-link">&#9632; Pipeline</a>
+  </nav>
+
+  <main class="main">
+    <div class="page-header">
+      <h2 id="greeting">Envoy</h2>
+      <p id="subheading">Your private career intelligence engine.</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card accent">
+        <div class="stat-value" id="stat-active">—</div>
+        <div class="stat-label">Active Opportunities</div>
+      </div>
+      <div class="stat-card success">
+        <div class="stat-value" id="stat-screener">—</div>
+        <div class="stat-label">Screener Calls</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-outreach">—</div>
+        <div class="stat-label">Outreach Sent</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-pending">—</div>
+        <div class="stat-label">Jobs to Review</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <div class="card">
+          <div class="card-title">Pipeline</div>
+          <div id="pipeline-list"><div class="loading"><div class="spinner"></div> Loading...</div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Next Actions</div>
+          <div id="next-actions"></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <div class="card-title">Recent Outreach</div>
+          <div id="outreach-list"><div class="loading"><div class="spinner"></div> Loading...</div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Urgency Setting</div>
+          <div id="urgency-display">—</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const URGENCY_LABELS = {
+      '30_days': '30 Days — Aggressive',
+      '60_days': '60 Days — Balanced',
+      '90_days': '90 Days — Standard',
+      '180_days': '180 Days — Selective',
+      'open': 'Open — Opportunistic',
+    };
+    const STAGE_LABELS = {
+      swiped_right: 'Swiped Right',
+      outreach: 'Outreach Sent',
+      application: 'Applied',
+      screener: 'Screener',
+      hiring_manager: 'Hiring Manager',
+      team_interview: 'Team Interview',
+      offer: 'Offer',
+      negotiation: 'Negotiation',
+    };
+
+    async function load() {
+      const [profile, stats, pipeline, outreach, jobs] = await Promise.all([
+        fetch('/api/profile').then(r => r.json()),
+        fetch('/api/pipeline/stats').then(r => r.json()),
+        fetch('/api/pipeline').then(r => r.json()),
+        fetch('/api/outreach').then(r => r.json()),
+        fetch('/api/jobs?status=pending').then(r => r.json()),
+      ]);
+
+      // Greeting
+      if (profile.profile?.name) {
+        document.getElementById('greeting').textContent = `Welcome back, ${profile.profile.name.split(' ')[0]}`;
+      }
+      if (profile.profile?.urgency_setting) {
+        document.getElementById('urgency-display').textContent = URGENCY_LABELS[profile.profile.urgency_setting] || profile.profile.urgency_setting;
+      }
+
+      // Stats
+      document.getElementById('stat-active').textContent = stats.conversion?.active ?? 0;
+      document.getElementById('stat-screener').textContent = stats.conversion?.screener_calls ?? 0;
+      document.getElementById('stat-outreach').textContent = stats.outreach?.sent ?? 0;
+      document.getElementById('stat-pending').textContent = jobs.length;
+
+      // Pipeline
+      const pipelineEl = document.getElementById('pipeline-list');
+      if (!pipeline.length) {
+        pipelineEl.innerHTML = '<div class="empty"><p>No active opportunities yet. <a href="/feed.html" style="color:var(--accent)">Add jobs to your feed →</a></p></div>';
+      } else {
+        pipelineEl.innerHTML = pipeline.slice(0, 6).map(j => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+            <div>
+              <div style="font-weight:600;font-size:13px">${j.title}</div>
+              <div style="font-size:12px;color:var(--text-muted)">${j.company}</div>
+            </div>
+            <span class="badge badge-draft">${STAGE_LABELS[j.pipeline_stage] || j.pipeline_stage || 'Active'}</span>
+          </div>
+        `).join('');
+      }
+
+      // Next Actions
+      const actions = [];
+      if (!profile.profile?.name) actions.push({ icon: '→', text: 'Complete your profile', link: '/onboarding.html' });
+      if (jobs.length > 0) actions.push({ icon: '→', text: `${jobs.length} job${jobs.length > 1 ? 's' : ''} waiting for your review`, link: '/feed.html' });
+      const noBrief = pipeline.filter(j => !j.brief_status);
+      if (noBrief.length > 0) actions.push({ icon: '→', text: `Generate briefs for ${noBrief.length} active opportunity${noBrief.length > 1 ? 'ies' : ''}`, link: '/brief.html' });
+      if (!actions.length) actions.push({ icon: '✓', text: 'System running. Check your pipeline.', link: '/pipeline.html' });
+
+      document.getElementById('next-actions').innerHTML = actions.map(a => `
+        <a href="${a.link}" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);text-decoration:none;color:var(--text);font-size:13px">
+          <span style="color:var(--accent)">${a.icon}</span> ${a.text}
+        </a>
+      `).join('');
+
+      // Outreach
+      const outEl = document.getElementById('outreach-list');
+      const recent = outreach.slice(0, 5);
+      if (!recent.length) {
+        outEl.innerHTML = '<div class="empty"><p>No outreach yet. <a href="/network.html" style="color:var(--accent)">Map your network →</a></p></div>';
+      } else {
+        outEl.innerHTML = recent.map(o => `
+          <div style="padding:8px 0;border-bottom:1px solid var(--border)">
+            <div style="display:flex;justify-content:space-between">
+              <span style="font-size:13px;font-weight:600">${o.connection_name || 'Contact'}</span>
+              <span class="badge ${o.status === 'sent' ? 'badge-sent' : o.status === 'approved' ? 'badge-approved' : 'badge-draft'}">${o.status}</span>
+            </div>
+            <div style="font-size:12px;color:var(--text-muted)">${o.company} — ${o.title}</div>
+          </div>
+        `).join('');
+      }
+    }
+
+    load();
+  </script>
+</body>
+</html>

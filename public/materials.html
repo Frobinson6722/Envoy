@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Envoy — Materials</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="sidebar-logo"><h1>Envoy</h1><p>Career Intelligence</p></div>
+    <a href="/" class="nav-link">&#9632; Dashboard</a>
+    <a href="/onboarding.html" class="nav-link">&#9675; Onboarding</a>
+    <a href="/feed.html" class="nav-link">&#9632; Job Feed</a>
+    <a href="/brief.html" class="nav-link">&#9632; Briefs</a>
+    <a href="/materials.html" class="nav-link active">&#9632; Materials</a>
+    <a href="/network.html" class="nav-link">&#9632; Network</a>
+    <a href="/pipeline.html" class="nav-link">&#9632; Pipeline</a>
+  </nav>
+
+  <main class="main">
+    <div class="page-header">
+      <h2>Resume & Cover Letter</h2>
+      <p>Auto-tailored per role. Under 15 minutes from generation to ready-to-use. Nothing leaves without your approval.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Generate Materials</div>
+      <div style="display:flex;gap:12px;align-items:flex-end">
+        <div class="form-group" style="flex:1;margin-bottom:0">
+          <label>Active Opportunity</label>
+          <select id="job-select">
+            <option value="">— select a role —</option>
+          </select>
+        </div>
+        <button onclick="generateMaterials()" class="btn btn-primary" id="gen-btn">Generate</button>
+        <span id="gen-status" style="font-size:13px;color:var(--text-muted);align-self:center"></span>
+      </div>
+    </div>
+
+    <!-- MATERIALS LIST -->
+    <div class="card">
+      <div class="card-title">Generated Materials</div>
+      <div id="materials-list"></div>
+    </div>
+
+    <!-- EDITOR -->
+    <div id="editor-section" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div>
+          <h3 id="editor-label" style="font-size:16px;font-weight:700"></h3>
+          <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
+            <div class="auth-score">
+              <div class="auth-bar"><div class="auth-fill" id="auth-fill"></div></div>
+              <span id="auth-label" style="font-size:12px;color:var(--text-muted)"></span>
+            </div>
+            <span class="badge" id="mat-status-badge"></span>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button onclick="saveMaterials()" class="btn btn-secondary">Save</button>
+          <button onclick="approveMaterials()" class="btn btn-success">✓ Approve</button>
+          <span id="save-status" style="font-size:13px;color:var(--text-muted)"></span>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('resume')">Resume</button>
+        <button class="tab-btn" onclick="showTab('cover')">Cover Letter</button>
+      </div>
+
+      <div id="tab-resume">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+          <button onclick="copyText('resume-editor')" class="btn btn-ghost btn-sm">Copy Resume</button>
+        </div>
+        <textarea id="resume-editor" rows="32" style="font-family:monospace;font-size:12px;line-height:1.6"></textarea>
+      </div>
+
+      <div id="tab-cover" style="display:none">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+          <button onclick="copyText('cover-editor')" class="btn btn-ghost btn-sm">Copy Cover Letter</button>
+        </div>
+        <textarea id="cover-editor" rows="20" style="font-family:inherit;font-size:13px;line-height:1.7"></textarea>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let currentJobId = null;
+
+    function showTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', ['resume','cover'][i] === tab));
+      document.getElementById('tab-resume').style.display = tab === 'resume' ? 'block' : 'none';
+      document.getElementById('tab-cover').style.display = tab === 'cover' ? 'block' : 'none';
+    }
+
+    async function loadJobs() {
+      const jobs = await fetch('/api/jobs?status=active').then(r => r.json());
+      const sel = document.getElementById('job-select');
+      sel.innerHTML = '<option value="">— select a role —</option>';
+      jobs.forEach(j => {
+        const opt = document.createElement('option');
+        opt.value = j.id;
+        opt.textContent = `${j.company} — ${j.title}`;
+        sel.appendChild(opt);
+      });
+    }
+
+    async function loadMaterials() {
+      const mats = await fetch('/api/materials').then(r => r.json());
+      const el = document.getElementById('materials-list');
+      if (!mats.length) {
+        el.innerHTML = '<div class="empty"><p>No materials generated yet.</p></div>';
+        return;
+      }
+      el.innerHTML = `<table>
+        <thead><tr><th>Company</th><th>Role</th><th>Authenticity</th><th>Status</th><th></th></tr></thead>
+        <tbody>${mats.map(m => `
+          <tr>
+            <td><strong>${m.company}</strong></td>
+            <td>${m.title}</td>
+            <td>
+              <div class="auth-score">
+                <div class="auth-bar"><div class="auth-fill" style="width:${m.authenticity_score||0}%;background:${(m.authenticity_score||0)>=80?'var(--success)':(m.authenticity_score||0)>=60?'var(--warning)':'var(--danger)'}"></div></div>
+                ${m.authenticity_score||'?'}%
+              </div>
+            </td>
+            <td><span class="badge ${m.status==='approved'?'badge-approved':'badge-draft'}">${m.status}</span></td>
+            <td><button class="btn btn-secondary btn-sm" onclick="openEditor(${m.job_id},'${m.company} — ${m.title}')">Edit</button></td>
+          </tr>
+        `).join('')}</tbody>
+      </table>`;
+    }
+
+    async function generateMaterials() {
+      const jobId = document.getElementById('job-select').value;
+      if (!jobId) return;
+      const status = document.getElementById('gen-status');
+      const btn = document.getElementById('gen-btn');
+      btn.disabled = true;
+      status.innerHTML = '<div class="loading"><div class="spinner"></div> Generating (60–120 seconds)...</div>';
+
+      const r = await fetch(`/api/materials/generate/${jobId}`, { method: 'POST' });
+      const data = await r.json();
+      btn.disabled = false;
+
+      if (data.error) {
+        status.textContent = data.error;
+        status.style.color = 'var(--danger)';
+        return;
+      }
+      status.textContent = '✓ Generated';
+      status.style.color = 'var(--success)';
+      loadMaterials();
+      const label = document.getElementById('job-select').options[document.getElementById('job-select').selectedIndex].text;
+      openEditor(jobId, label);
+    }
+
+    async function openEditor(jobId, label) {
+      currentJobId = jobId;
+      const mat = await fetch(`/api/materials/${jobId}`).then(r => r.json());
+      if (!mat) return;
+
+      document.getElementById('editor-section').style.display = 'block';
+      document.getElementById('editor-label').textContent = label;
+      document.getElementById('resume-editor').value = mat.resume || '';
+      document.getElementById('cover-editor').value = mat.cover_letter || '';
+
+      const s = mat.authenticity_score || 0;
+      document.getElementById('auth-fill').style.width = s + '%';
+      document.getElementById('auth-fill').style.background = s >= 80 ? 'var(--success)' : s >= 60 ? 'var(--warning)' : 'var(--danger)';
+      document.getElementById('auth-label').textContent = s + '% authentic';
+
+      const statusEl = document.getElementById('mat-status-badge');
+      statusEl.textContent = mat.status;
+      statusEl.className = `badge ${mat.status === 'approved' ? 'badge-approved' : 'badge-draft'}`;
+
+      document.getElementById('editor-section').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    async function saveMaterials() {
+      if (!currentJobId) return;
+      const r = await fetch(`/api/materials/${currentJobId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          resume: document.getElementById('resume-editor').value,
+          cover_letter: document.getElementById('cover-editor').value,
+        })
+      });
+      const data = await r.json();
+      const status = document.getElementById('save-status');
+      status.textContent = data.success ? '✓ Saved' : data.error;
+      status.style.color = data.success ? 'var(--success)' : 'var(--danger)';
+    }
+
+    async function approveMaterials() {
+      if (!currentJobId) return;
+      await saveMaterials();
+      const r = await fetch(`/api/materials/${currentJobId}/approve`, { method: 'POST' });
+      const data = await r.json();
+      if (data.success) {
+        const statusEl = document.getElementById('mat-status-badge');
+        statusEl.textContent = 'approved';
+        statusEl.className = 'badge badge-approved';
+        document.getElementById('save-status').textContent = '✓ Approved — ready to use';
+        document.getElementById('save-status').style.color = 'var(--success)';
+        loadMaterials();
+      }
+    }
+
+    function copyText(id) {
+      navigator.clipboard.writeText(document.getElementById(id).value);
+      document.getElementById('save-status').textContent = '✓ Copied';
+      document.getElementById('save-status').style.color = 'var(--success)';
+    }
+
+    loadJobs();
+    loadMaterials();
+  </script>
+</body>
+</html>

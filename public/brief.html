@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Envoy — Briefs</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="sidebar-logo"><h1>Envoy</h1><p>Career Intelligence</p></div>
+    <a href="/" class="nav-link">&#9632; Dashboard</a>
+    <a href="/onboarding.html" class="nav-link">&#9675; Onboarding</a>
+    <a href="/feed.html" class="nav-link">&#9632; Job Feed</a>
+    <a href="/brief.html" class="nav-link active">&#9632; Briefs</a>
+    <a href="/materials.html" class="nav-link">&#9632; Materials</a>
+    <a href="/network.html" class="nav-link">&#9632; Network</a>
+    <a href="/pipeline.html" class="nav-link">&#9632; Pipeline</a>
+  </nav>
+
+  <main class="main">
+    <div class="page-header">
+      <h2>Market Intelligence Briefs</h2>
+      <p>The hook that opens every door. Review every brief before it goes out. Nothing sends without your sign-off.</p>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <!-- GENERATE BRIEF -->
+        <div class="card">
+          <div class="card-title">Generate Brief</div>
+          <div class="form-group">
+            <label>Select Active Opportunity</label>
+            <select id="job-select">
+              <option value="">— select a role —</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Brief Type</label>
+            <select id="brief-type">
+              <option value="full">Full Brief (500–800 words) — for high-conviction targets</option>
+              <option value="lite">Lite Brief (200 words) — for early-stage screening</option>
+            </select>
+          </div>
+          <div class="btn-row">
+            <button onclick="generateBrief()" class="btn btn-primary" id="gen-btn">Generate Brief</button>
+            <span id="gen-status" style="font-size:13px;color:var(--text-muted)"></span>
+          </div>
+        </div>
+
+        <!-- BRIEF LIST -->
+        <div class="card">
+          <div class="card-title">Generated Briefs</div>
+          <div id="briefs-list"></div>
+        </div>
+      </div>
+
+      <div>
+        <!-- DRAFTING ROOM -->
+        <div class="card" id="drafting-room" style="display:none">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+            <div>
+              <div class="card-title" style="margin-bottom:4px">Drafting Room</div>
+              <div id="brief-job-label" style="font-size:13px;color:var(--text-muted)"></div>
+            </div>
+            <div class="btn-row">
+              <div class="auth-score">
+                <div class="auth-bar"><div class="auth-fill" id="auth-fill"></div></div>
+                <span id="auth-label">—</span>
+              </div>
+              <span class="badge" id="brief-status-badge"></span>
+            </div>
+          </div>
+
+          <div class="alert alert-info" style="margin-bottom:12px">
+            Edit this brief until you are proud enough to send it. Every edit teaches the system your voice. Nothing sends without your approval.
+          </div>
+
+          <textarea id="brief-editor" rows="24" style="font-family:inherit;line-height:1.7;font-size:13px"></textarea>
+
+          <div class="btn-row" style="margin-top:12px">
+            <button onclick="saveBrief()" class="btn btn-secondary">Save Edits</button>
+            <button onclick="approveBrief()" class="btn btn-success">✓ Approve Brief</button>
+            <button onclick="copyBrief()" class="btn btn-ghost">Copy</button>
+            <span id="brief-save-status" style="font-size:13px;color:var(--text-muted)"></span>
+          </div>
+        </div>
+
+        <div id="drafting-placeholder" class="card">
+          <div class="empty">
+            <h3>Drafting Room</h3>
+            <p>Select a brief from the list or generate one to start editing.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let currentBriefJobId = null;
+
+    async function loadJobs() {
+      const jobs = await fetch('/api/jobs?status=active').then(r => r.json());
+      const sel = document.getElementById('job-select');
+      sel.innerHTML = '<option value="">— select a role —</option>';
+      jobs.forEach(j => {
+        const opt = document.createElement('option');
+        opt.value = j.id;
+        opt.textContent = `${j.company} — ${j.title}`;
+        sel.appendChild(opt);
+      });
+    }
+
+    async function loadBriefs() {
+      const briefs = await fetch('/api/briefs').then(r => r.json());
+      const el = document.getElementById('briefs-list');
+      if (!briefs.length) {
+        el.innerHTML = '<div class="empty"><p>No briefs generated yet. Add active opportunities first.</p></div>';
+        return;
+      }
+      el.innerHTML = briefs.map(b => `
+        <div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-weight:600;font-size:13px">${b.company}</div>
+            <div style="font-size:12px;color:var(--text-muted)">${b.title} · ${b.type} brief</div>
+          </div>
+          <div class="btn-row">
+            <div class="auth-score">
+              <div class="auth-bar"><div class="auth-fill" style="width:${b.authenticity_score || 0}%"></div></div>
+              <span style="font-size:11px;color:var(--text-muted)">${b.authenticity_score || '?'}%</span>
+            </div>
+            <span class="badge ${b.status === 'approved' ? 'badge-approved' : 'badge-draft'}">${b.status}</span>
+            <button class="btn btn-secondary btn-sm" onclick="openDraftingRoom(${b.job_id}, '${b.company} — ${b.title}', ${b.authenticity_score || 0}, '${b.status}')">Edit</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function generateBrief() {
+      const jobId = document.getElementById('job-select').value;
+      const type = document.getElementById('brief-type').value;
+      if (!jobId) return;
+
+      const status = document.getElementById('gen-status');
+      const btn = document.getElementById('gen-btn');
+      btn.disabled = true;
+      status.innerHTML = '<div class="loading"><div class="spinner"></div> Generating (60–90 seconds)...</div>';
+
+      const r = await fetch(`/api/briefs/generate/${jobId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type })
+      });
+      const brief = await r.json();
+      btn.disabled = false;
+
+      if (brief.error) {
+        status.textContent = brief.error;
+        status.style.color = 'var(--danger)';
+      } else {
+        status.textContent = '✓ Brief generated';
+        status.style.color = 'var(--success)';
+        loadBriefs();
+        const jobLabel = document.getElementById('job-select').options[document.getElementById('job-select').selectedIndex].text;
+        openDraftingRoom(jobId, jobLabel, brief.authenticity_score, brief.status);
+      }
+    }
+
+    async function openDraftingRoom(jobId, label, score, status) {
+      currentBriefJobId = jobId;
+      const brief = await fetch(`/api/briefs/${jobId}`).then(r => r.json());
+      if (!brief) return;
+
+      document.getElementById('drafting-placeholder').style.display = 'none';
+      document.getElementById('drafting-room').style.display = 'block';
+      document.getElementById('brief-job-label').textContent = label;
+      document.getElementById('brief-editor').value = brief.full_text || '';
+
+      const s = brief.authenticity_score || score || 0;
+      document.getElementById('auth-fill').style.width = s + '%';
+      document.getElementById('auth-fill').style.background = s >= 80 ? 'var(--success)' : s >= 60 ? 'var(--warning)' : 'var(--danger)';
+      document.getElementById('auth-label').textContent = s + '% authentic';
+
+      const statusEl = document.getElementById('brief-status-badge');
+      statusEl.textContent = brief.status || status;
+      statusEl.className = `badge ${(brief.status || status) === 'approved' ? 'badge-approved' : 'badge-draft'}`;
+    }
+
+    async function saveBrief() {
+      if (!currentBriefJobId) return;
+      const r = await fetch(`/api/briefs/${currentBriefJobId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ full_text: document.getElementById('brief-editor').value })
+      });
+      const status = document.getElementById('brief-save-status');
+      const data = await r.json();
+      status.textContent = data.success ? '✓ Saved' : data.error;
+      status.style.color = data.success ? 'var(--success)' : 'var(--danger)';
+    }
+
+    async function approveBrief() {
+      if (!currentBriefJobId) return;
+      await saveBrief();
+      const r = await fetch(`/api/briefs/${currentBriefJobId}/approve`, { method: 'POST' });
+      const data = await r.json();
+      if (data.success) {
+        const statusEl = document.getElementById('brief-status-badge');
+        statusEl.textContent = 'approved';
+        statusEl.className = 'badge badge-approved';
+        document.getElementById('brief-save-status').textContent = '✓ Approved — ready to send';
+        document.getElementById('brief-save-status').style.color = 'var(--success)';
+        loadBriefs();
+      }
+    }
+
+    function copyBrief() {
+      navigator.clipboard.writeText(document.getElementById('brief-editor').value);
+      document.getElementById('brief-save-status').textContent = '✓ Copied to clipboard';
+      document.getElementById('brief-save-status').style.color = 'var(--success)';
+    }
+
+    loadJobs();
+    loadBriefs();
+  </script>
+</body>
+</html>

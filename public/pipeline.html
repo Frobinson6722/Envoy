@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Envoy — Pipeline</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="sidebar-logo"><h1>Envoy</h1><p>Career Intelligence</p></div>
+    <a href="/" class="nav-link">&#9632; Dashboard</a>
+    <a href="/onboarding.html" class="nav-link">&#9675; Onboarding</a>
+    <a href="/feed.html" class="nav-link">&#9632; Job Feed</a>
+    <a href="/brief.html" class="nav-link">&#9632; Briefs</a>
+    <a href="/materials.html" class="nav-link">&#9632; Materials</a>
+    <a href="/network.html" class="nav-link">&#9632; Network</a>
+    <a href="/pipeline.html" class="nav-link active">&#9632; Pipeline</a>
+  </nav>
+
+  <main class="main">
+    <div class="page-header">
+      <h2>Pipeline</h2>
+      <p>Screener call conversion rate is the north star. Everything else is secondary.</p>
+    </div>
+
+    <!-- CONVERSION STATS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value" id="s-active">—</div>
+        <div class="stat-label">Active</div>
+      </div>
+      <div class="stat-card accent">
+        <div class="stat-value" id="s-screener">—</div>
+        <div class="stat-label">Screener Calls</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="s-hm">—</div>
+        <div class="stat-label">Hiring Manager</div>
+      </div>
+      <div class="stat-card success">
+        <div class="stat-value" id="s-offers">—</div>
+        <div class="stat-label">Offers / Negotiations</div>
+      </div>
+    </div>
+
+    <!-- FUNNEL VISUALIZATION -->
+    <div class="card">
+      <div class="card-title">Funnel</div>
+      <div class="funnel" id="funnel-display"></div>
+    </div>
+
+    <!-- ACTIVE OPPORTUNITIES TABLE -->
+    <div class="card">
+      <div class="card-title">Active Opportunities</div>
+      <div id="pipeline-table"></div>
+    </div>
+
+    <!-- MOVE STAGE PANEL -->
+    <div id="stage-panel" class="card" style="display:none">
+      <div class="card-title">Update Stage</div>
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px" id="stage-job-label"></div>
+      <div class="form-group">
+        <label>New Stage</label>
+        <select id="stage-select">
+          <option value="swiped_right">Swiped Right</option>
+          <option value="outreach">Outreach Sent</option>
+          <option value="application">Applied</option>
+          <option value="screener">Screener Call</option>
+          <option value="hiring_manager">Hiring Manager</option>
+          <option value="team_interview">Team Interview</option>
+          <option value="offer">Offer</option>
+          <option value="negotiation">Negotiation</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Notes (optional)</label>
+        <textarea id="stage-notes" rows="2" placeholder="What happened?"></textarea>
+      </div>
+      <div class="btn-row">
+        <button onclick="updateStage()" class="btn btn-primary">Update Stage</button>
+        <button onclick="closeStagePanel()" class="btn btn-ghost">Cancel</button>
+        <span id="stage-status" style="font-size:13px;color:var(--text-muted)"></span>
+      </div>
+    </div>
+
+    <!-- MONTHLY DIGEST -->
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div class="card-title" style="margin-bottom:0">Performance Digest</div>
+        <button onclick="generateDigest()" class="btn btn-secondary btn-sm" id="digest-btn">Generate Digest</button>
+      </div>
+      <div id="digest-content">
+        <div class="empty"><p>Generate your monthly digest to see what's working and what to focus on next.</p></div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const STAGES = [
+      { key: 'swiped_right', label: 'Swiped Right' },
+      { key: 'outreach', label: 'Outreach' },
+      { key: 'application', label: 'Applied' },
+      { key: 'screener', label: 'Screener' },
+      { key: 'hiring_manager', label: 'Hiring Manager' },
+      { key: 'team_interview', label: 'Team Interview' },
+      { key: 'offer', label: 'Offer' },
+      { key: 'negotiation', label: 'Negotiation' },
+    ];
+
+    let currentStageJobId = null;
+
+    async function load() {
+      const [stats, pipeline] = await Promise.all([
+        fetch('/api/pipeline/stats').then(r => r.json()),
+        fetch('/api/pipeline').then(r => r.json()),
+      ]);
+
+      // Stats
+      document.getElementById('s-active').textContent = stats.conversion?.active ?? 0;
+      document.getElementById('s-screener').textContent = stats.conversion?.screener_calls ?? 0;
+      document.getElementById('s-hm').textContent = stats.conversion?.hiring_manager ?? 0;
+      document.getElementById('s-offers').textContent = stats.conversion?.offers ?? 0;
+
+      // Funnel
+      const stageMap = {};
+      (stats.stages || []).forEach(s => stageMap[s.stage] = parseInt(s.count));
+      document.getElementById('funnel-display').innerHTML = STAGES.map(s => `
+        <div class="funnel-stage">
+          <h4>${s.label}</h4>
+          <div class="funnel-count">${stageMap[s.key] || 0}</div>
+        </div>
+      `).join('');
+
+      // Pipeline table
+      const el = document.getElementById('pipeline-table');
+      if (!pipeline.length) {
+        el.innerHTML = '<div class="empty"><h3>No active opportunities</h3><p>Swipe right on jobs in the feed to build your pipeline.</p></div>';
+        return;
+      }
+
+      el.innerHTML = `<table>
+        <thead>
+          <tr>
+            <th>Company</th>
+            <th>Role</th>
+            <th>Stage</th>
+            <th>Brief</th>
+            <th>Materials</th>
+            <th>Outreach</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${pipeline.map(j => `
+            <tr>
+              <td><strong>${j.company}</strong></td>
+              <td>${j.title}</td>
+              <td>
+                <span class="badge badge-draft">${STAGES.find(s => s.key === j.pipeline_stage)?.label || j.pipeline_stage || '—'}</span>
+              </td>
+              <td>
+                ${j.brief_status
+                  ? `<span class="badge ${j.brief_status === 'approved' ? 'badge-approved' : 'badge-draft'}">${j.brief_status}</span>`
+                  : `<a href="/brief.html" style="font-size:12px;color:var(--accent)">Generate</a>`
+                }
+              </td>
+              <td>
+                ${j.materials_status
+                  ? `<span class="badge ${j.materials_status === 'approved' ? 'badge-approved' : 'badge-draft'}">${j.materials_status}</span>`
+                  : `<a href="/materials.html" style="font-size:12px;color:var(--accent)">Generate</a>`
+                }
+              </td>
+              <td style="text-align:center">${j.outreach_sent || 0}</td>
+              <td>
+                <button class="btn btn-secondary btn-sm" onclick="openStagePanel(${j.id}, '${j.company} — ${j.title}', '${j.pipeline_stage || 'swiped_right'}')">Move</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>`;
+    }
+
+    function openStagePanel(jobId, label, currentStage) {
+      currentStageJobId = jobId;
+      document.getElementById('stage-job-label').textContent = label;
+      document.getElementById('stage-select').value = currentStage;
+      document.getElementById('stage-notes').value = '';
+      document.getElementById('stage-status').textContent = '';
+      document.getElementById('stage-panel').style.display = 'block';
+      document.getElementById('stage-panel').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function closeStagePanel() {
+      document.getElementById('stage-panel').style.display = 'none';
+      currentStageJobId = null;
+    }
+
+    async function updateStage() {
+      if (!currentStageJobId) return;
+      const stage = document.getElementById('stage-select').value;
+      const notes = document.getElementById('stage-notes').value;
+      const r = await fetch('/api/pipeline/stage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ job_id: currentStageJobId, stage, notes })
+      });
+      const data = await r.json();
+      const status = document.getElementById('stage-status');
+      if (data.success) {
+        status.textContent = '✓ Updated';
+        status.style.color = 'var(--success)';
+        closeStagePanel();
+        load();
+      } else {
+        status.textContent = data.error;
+        status.style.color = 'var(--danger)';
+      }
+    }
+
+    async function generateDigest() {
+      const btn = document.getElementById('digest-btn');
+      const el = document.getElementById('digest-content');
+      btn.disabled = true;
+      el.innerHTML = '<div class="loading"><div class="spinner"></div> Generating your performance digest...</div>';
+
+      const r = await fetch('/api/digest');
+      const data = await r.json();
+      btn.disabled = false;
+
+      if (data.error) {
+        el.innerHTML = `<div class="alert alert-error">${data.error}</div>`;
+        return;
+      }
+      el.innerHTML = `<div class="digest-text">${data.digest}</div>`;
+    }
+
+    load();
+  </script>
+</body>
+</html>

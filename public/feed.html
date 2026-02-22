@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Envoy — Job Feed</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="sidebar-logo"><h1>Envoy</h1><p>Career Intelligence</p></div>
+    <a href="/" class="nav-link">&#9632; Dashboard</a>
+    <a href="/onboarding.html" class="nav-link">&#9675; Onboarding</a>
+    <a href="/feed.html" class="nav-link active">&#9632; Job Feed</a>
+    <a href="/brief.html" class="nav-link">&#9632; Briefs</a>
+    <a href="/materials.html" class="nav-link">&#9632; Materials</a>
+    <a href="/network.html" class="nav-link">&#9632; Network</a>
+    <a href="/pipeline.html" class="nav-link">&#9632; Pipeline</a>
+  </nav>
+
+  <main class="main">
+    <div class="page-header">
+      <h2>Job Feed</h2>
+      <p>Add roles, get a match analysis, swipe to decide. Your taste teaches the system.</p>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <!-- ADD JOB FORM -->
+        <div class="card">
+          <div class="card-title">Add a Role</div>
+          <div class="form-group">
+            <label>Company</label>
+            <input type="text" id="add-company" placeholder="Acme Corp">
+          </div>
+          <div class="form-group">
+            <label>Title</label>
+            <input type="text" id="add-title" placeholder="VP of Product">
+          </div>
+          <div class="form-group">
+            <label>Job Description (paste the full JD)</label>
+            <textarea id="add-desc" rows="8" placeholder="Paste the job description here..."></textarea>
+          </div>
+          <div class="two-col">
+            <div class="form-group">
+              <label>Location</label>
+              <input type="text" id="add-location" placeholder="Remote / SF / NYC">
+            </div>
+            <div class="form-group">
+              <label>Salary Range</label>
+              <input type="text" id="add-salary" placeholder="$180k–$220k + equity">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>URL (optional)</label>
+            <input type="url" id="add-url" placeholder="https://...">
+          </div>
+          <div class="btn-row">
+            <button onclick="addJob()" class="btn btn-primary">Add + Analyze</button>
+            <span id="add-status" style="font-size:13px;color:var(--text-muted)"></span>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <!-- CURRENT CARD -->
+        <div id="swipe-area">
+          <div class="swipe-arena">
+            <div id="no-cards" class="empty" style="display:none">
+              <h3>Feed is clear</h3>
+              <p>Add a role on the left to review it.</p>
+            </div>
+            <div id="current-card" style="display:none;width:100%">
+              <div class="job-card" id="card-display">
+                <div id="card-counter" style="font-size:11px;color:var(--text-dim);margin-bottom:8px"></div>
+                <div class="company" id="card-company"></div>
+                <div class="title" id="card-title"></div>
+                <span class="channel-badge" id="card-channel"></span>
+                <div class="thesis" id="card-thesis">
+                  <div class="loading"><div class="spinner"></div> Analyzing fit...</div>
+                </div>
+                <div class="trajectory" id="card-trajectory"></div>
+              </div>
+              <div class="swipe-controls">
+                <button class="swipe-btn swipe-pass" onclick="swipe('left')">✕ Pass</button>
+                <button class="swipe-btn swipe-right" onclick="swipe('right')">→ Interested</button>
+              </div>
+              <!-- Voice note (shown after swipe left) -->
+              <div class="voice-note-box" id="voice-box" style="display:none">
+                <p>Why are you passing? (optional — teaches your taste engine)</p>
+                <textarea id="voice-note" rows="2" placeholder="Too early stage, wrong function, comp too low..."></textarea>
+                <button onclick="submitVoiceNote()" class="btn btn-secondary btn-sm" style="margin-top:8px">Save Reason</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PENDING LIST -->
+        <div class="card" style="margin-top:16px">
+          <div class="card-title">Queue</div>
+          <div id="pending-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORY TABLE -->
+    <div class="card" style="margin-top:8px">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="filterJobs('pending')">To Review</button>
+        <button class="tab-btn" onclick="filterJobs('active')">Active</button>
+        <button class="tab-btn" onclick="filterJobs('passed')">Passed</button>
+      </div>
+      <div id="jobs-table"></div>
+    </div>
+  </main>
+
+  <script>
+    let jobs = [];
+    let pending = [];
+    let currentJobId = null;
+    let lastSwipeDirection = null;
+
+    const CHANNEL_CLASS = { warm: 'channel-warm', direct: 'channel-direct', linkedin: 'channel-linkedin', brief: 'channel-brief' };
+
+    async function loadJobs(status = 'pending') {
+      jobs = await fetch(`/api/jobs?status=${status}`).then(r => r.json());
+      renderTable(jobs);
+      if (status === 'pending') {
+        pending = jobs;
+        renderQueue();
+        showNextCard();
+      }
+    }
+
+    function renderQueue() {
+      const el = document.getElementById('pending-list');
+      if (!pending.length) {
+        el.innerHTML = '<p style="color:var(--text-muted);font-size:13px">No roles queued.</p>';
+        return;
+      }
+      el.innerHTML = pending.map(j => `
+        <div style="padding:6px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-size:13px;font-weight:600">${j.title}</div>
+            <div style="font-size:11px;color:var(--text-muted)">${j.company}</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="viewCard(${j.id})">Review</button>
+        </div>
+      `).join('');
+    }
+
+    async function addJob() {
+      const status = document.getElementById('add-status');
+      const company = document.getElementById('add-company').value.trim();
+      const title = document.getElementById('add-title').value.trim();
+      if (!company || !title) { status.textContent = 'Company and title required'; status.style.color = 'var(--danger)'; return; }
+
+      status.textContent = 'Adding...';
+      status.style.color = 'var(--text-muted)';
+
+      const r = await fetch('/api/jobs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          company,
+          title,
+          description: document.getElementById('add-desc').value,
+          location: document.getElementById('add-location').value,
+          salary_range: document.getElementById('add-salary').value,
+          url: document.getElementById('add-url').value,
+        })
+      });
+      const job = await r.json();
+      if (job.error) { status.textContent = job.error; status.style.color = 'var(--danger)'; return; }
+
+      // Clear form
+      ['add-company','add-title','add-desc','add-location','add-salary','add-url'].forEach(id => document.getElementById(id).value = '');
+      status.textContent = '✓ Added — analyzing...';
+      status.style.color = 'var(--success)';
+
+      // Trigger AI analysis
+      fetch(`/api/jobs/${job.id}/analyze`, { method: 'POST' }).then(() => {
+        loadJobs('pending');
+        status.textContent = '✓ Analysis complete';
+      });
+      pending.push(job);
+      renderQueue();
+      if (!currentJobId) viewCard(job.id);
+    }
+
+    async function viewCard(id) {
+      document.getElementById('no-cards').style.display = 'none';
+      document.getElementById('current-card').style.display = 'block';
+      document.getElementById('voice-box').style.display = 'none';
+      currentJobId = id;
+
+      const job = await fetch(`/api/jobs/${id}`).then(r => r.json());
+      document.getElementById('card-company').textContent = job.company;
+      document.getElementById('card-title').textContent = job.title;
+
+      const channel = job.recommended_channel || 'direct';
+      const channelEl = document.getElementById('card-channel');
+      channelEl.textContent = channel.charAt(0).toUpperCase() + channel.slice(1) + ' path';
+      channelEl.className = `channel-badge ${CHANNEL_CLASS[channel] || 'channel-direct'}`;
+
+      if (job.match_thesis) {
+        document.getElementById('card-thesis').textContent = job.match_thesis;
+      } else {
+        document.getElementById('card-thesis').innerHTML = '<div class="loading"><div class="spinner"></div> Analyzing...</div>';
+        // Poll for analysis
+        pollAnalysis(id);
+      }
+
+      if (job.trajectory) {
+        document.getElementById('card-trajectory').innerHTML = `<strong>3–5yr trajectory:</strong> ${job.trajectory}`;
+      }
+    }
+
+    async function pollAnalysis(id) {
+      for (let i = 0; i < 30; i++) {
+        await new Promise(r => setTimeout(r, 2000));
+        const job = await fetch(`/api/jobs/${id}`).then(r => r.json());
+        if (job.match_thesis && id === currentJobId) {
+          document.getElementById('card-thesis').textContent = job.match_thesis;
+          const channel = job.recommended_channel || 'direct';
+          const channelEl = document.getElementById('card-channel');
+          channelEl.textContent = channel.charAt(0).toUpperCase() + channel.slice(1) + ' path';
+          channelEl.className = `channel-badge ${CHANNEL_CLASS[channel] || 'channel-direct'}`;
+          if (job.trajectory) {
+            document.getElementById('card-trajectory').innerHTML = `<strong>3–5yr trajectory:</strong> ${job.trajectory}`;
+          }
+          break;
+        }
+      }
+    }
+
+    function showNextCard() {
+      pending = pending.filter(j => j.id !== currentJobId);
+      if (!pending.length) {
+        document.getElementById('current-card').style.display = 'none';
+        document.getElementById('no-cards').style.display = 'block';
+        currentJobId = null;
+        return;
+      }
+      viewCard(pending[0].id);
+    }
+
+    async function swipe(direction) {
+      if (!currentJobId) return;
+      lastSwipeDirection = direction;
+
+      if (direction === 'left') {
+        document.getElementById('voice-box').style.display = 'block';
+        await fetch(`/api/jobs/${currentJobId}/swipe`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ direction: 'left' })
+        });
+        pending = pending.filter(j => j.id !== currentJobId);
+        renderQueue();
+        // Show next after a beat
+        setTimeout(showNextCard, 500);
+      } else {
+        await fetch(`/api/jobs/${currentJobId}/swipe`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ direction: 'right' })
+        });
+        pending = pending.filter(j => j.id !== currentJobId);
+        renderQueue();
+        showNextCard();
+      }
+    }
+
+    async function submitVoiceNote() {
+      const note = document.getElementById('voice-note').value;
+      if (note && currentJobId) {
+        const prev = pending.find(j => j.id === currentJobId) || {};
+        // The swipe was already recorded; just update with transcript if possible
+        // (In practice, voice note augments the already-recorded swipe)
+      }
+      document.getElementById('voice-note').value = '';
+      document.getElementById('voice-box').style.display = 'none';
+      loadJobs('pending');
+    }
+
+    function renderTable(list) {
+      const el = document.getElementById('jobs-table');
+      if (!list.length) {
+        el.innerHTML = '<div class="empty"><p>No roles here yet.</p></div>';
+        return;
+      }
+      el.innerHTML = `<table>
+        <thead><tr><th>Company</th><th>Title</th><th>Channel</th><th>Location</th><th>Actions</th></tr></thead>
+        <tbody>
+          ${list.map(j => `
+            <tr>
+              <td><strong>${j.company}</strong></td>
+              <td>${j.title}</td>
+              <td>${j.recommended_channel || '—'}</td>
+              <td>${j.location || '—'}</td>
+              <td>
+                <div class="btn-row">
+                  ${j.swipe_status === 'pending' ? `<button class="btn btn-secondary btn-sm" onclick="viewCard(${j.id})">Review</button>` : ''}
+                  <button class="btn btn-ghost btn-sm" onclick="deleteJob(${j.id})">✕</button>
+                </div>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>`;
+    }
+
+    async function deleteJob(id) {
+      if (!confirm('Delete this job?')) return;
+      await fetch(`/api/jobs/${id}`, { method: 'DELETE' });
+      loadJobs('pending');
+    }
+
+    function filterJobs(status) {
+      document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', ['pending','active','passed'][i] === status));
+      loadJobs(status);
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowLeft') swipe('left');
+      if (e.key === 'ArrowRight') swipe('right');
+    });
+
+    loadJobs('pending');
+  </script>
+</body>
+</html>

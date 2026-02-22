@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Envoy — Network</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="sidebar-logo"><h1>Envoy</h1><p>Career Intelligence</p></div>
+    <a href="/" class="nav-link">&#9632; Dashboard</a>
+    <a href="/onboarding.html" class="nav-link">&#9675; Onboarding</a>
+    <a href="/feed.html" class="nav-link">&#9632; Job Feed</a>
+    <a href="/brief.html" class="nav-link">&#9632; Briefs</a>
+    <a href="/materials.html" class="nav-link">&#9632; Materials</a>
+    <a href="/network.html" class="nav-link active">&#9632; Network</a>
+    <a href="/pipeline.html" class="nav-link">&#9632; Pipeline</a>
+  </nav>
+
+  <main class="main">
+    <div class="page-header">
+      <h2>Network — Warm Paths First</h2>
+      <p>The primary channel. Cold outreach is a limited last resort.</p>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <!-- IMPORT -->
+        <div class="card">
+          <div class="card-title">Import LinkedIn Connections</div>
+          <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">From your LinkedIn data export, upload <strong>Connections.csv</strong>.</p>
+          <form id="conn-form">
+            <div class="form-group">
+              <label>Connections.csv</label>
+              <input type="file" name="connections" accept=".csv" required>
+            </div>
+            <div class="btn-row">
+              <button type="submit" class="btn btn-primary">Import Connections</button>
+              <span id="import-status" style="font-size:13px;color:var(--text-muted)"></span>
+            </div>
+          </form>
+        </div>
+
+        <!-- MATCH TO JOB -->
+        <div class="card">
+          <div class="card-title">Find Warm Paths</div>
+          <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">Select a role to see who in your network works or has worked there.</p>
+          <div class="form-group">
+            <label>Active Opportunity</label>
+            <select id="match-job-select">
+              <option value="">— select a role —</option>
+            </select>
+          </div>
+          <button onclick="matchConnections()" class="btn btn-secondary">Find Connections</button>
+
+          <div id="match-results" style="margin-top:16px"></div>
+        </div>
+
+        <!-- DRAFT OUTREACH -->
+        <div id="outreach-section" class="card" style="display:none">
+          <div class="card-title">Draft Warm Outreach</div>
+          <div class="form-group">
+            <label>Connection</label>
+            <select id="conn-select">
+              <option value="">— select a connection —</option>
+            </select>
+          </div>
+          <div class="form-group" style="display:flex;align-items:center;gap:8px">
+            <input type="checkbox" id="transparency-line" style="width:auto">
+            <label style="text-transform:none;letter-spacing:0;font-weight:normal;font-size:13px;color:var(--text);margin:0">
+              Add transparency line (P.S. about research assistant)
+            </label>
+          </div>
+          <div class="btn-row">
+            <button onclick="draftOutreach()" class="btn btn-primary" id="draft-btn">Draft Message</button>
+            <span id="draft-status" style="font-size:13px;color:var(--text-muted)"></span>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <!-- OUTREACH LIST -->
+        <div class="card">
+          <div class="card-title">Outreach Queue</div>
+          <div id="outreach-list"></div>
+        </div>
+
+        <!-- MESSAGE EDITOR -->
+        <div id="message-editor" class="card" style="display:none">
+          <div class="card-title">Review Message</div>
+          <div class="alert alert-info" style="margin-bottom:12px">
+            Every message requires your approval before it's marked ready. Review, edit, then approve.
+          </div>
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px" id="message-meta"></div>
+          <textarea id="message-text" rows="12" style="font-family:inherit;line-height:1.7;font-size:13px"></textarea>
+          <div class="btn-row" style="margin-top:12px">
+            <button onclick="saveMessage()" class="btn btn-secondary">Save Edits</button>
+            <button onclick="markSent()" class="btn btn-success">✓ Mark as Sent</button>
+            <button onclick="copyMessage()" class="btn btn-ghost">Copy</button>
+            <span id="msg-status" style="font-size:13px;color:var(--text-muted)"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALL CONNECTIONS -->
+    <div class="card" style="margin-top:8px">
+      <div class="card-title">All Connections (<span id="conn-count">0</span>)</div>
+      <div style="margin-bottom:12px">
+        <input type="text" id="conn-search" placeholder="Search by name or company..." oninput="searchConnections()" style="max-width:300px">
+      </div>
+      <div id="connections-table"></div>
+    </div>
+  </main>
+
+  <script>
+    let allConnections = [];
+    let currentOutreachId = null;
+    let currentMatchedJobId = null;
+    let matchedConnections = [];
+
+    document.getElementById('conn-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const status = document.getElementById('import-status');
+      status.textContent = 'Importing...';
+      const r = await fetch('/api/network/upload-csv', { method: 'POST', body: fd });
+      const data = await r.json();
+      if (data.success) {
+        status.textContent = `✓ ${data.count} connections imported`;
+        status.style.color = 'var(--success)';
+        loadConnections();
+      } else {
+        status.textContent = data.error;
+        status.style.color = 'var(--danger)';
+      }
+    });
+
+    async function loadJobs() {
+      const jobs = await fetch('/api/jobs?status=active').then(r => r.json());
+      const sel = document.getElementById('match-job-select');
+      sel.innerHTML = '<option value="">— select a role —</option>';
+      jobs.forEach(j => {
+        const opt = document.createElement('option');
+        opt.value = j.id;
+        opt.textContent = `${j.company} — ${j.title}`;
+        sel.appendChild(opt);
+      });
+    }
+
+    async function loadConnections() {
+      allConnections = await fetch('/api/network').then(r => r.json());
+      document.getElementById('conn-count').textContent = allConnections.length;
+      renderConnectionsTable(allConnections.slice(0, 50));
+    }
+
+    function renderConnectionsTable(conns) {
+      const el = document.getElementById('connections-table');
+      if (!conns.length) {
+        el.innerHTML = '<div class="empty"><p>No connections yet. Import from LinkedIn.</p></div>';
+        return;
+      }
+      el.innerHTML = `<table>
+        <thead><tr><th>Name</th><th>Company</th><th>Title</th><th>Connected</th></tr></thead>
+        <tbody>${conns.map(c => `
+          <tr>
+            <td><strong>${c.name}</strong></td>
+            <td>${c.company || '—'}</td>
+            <td>${c.title || '—'}</td>
+            <td style="color:var(--text-muted);font-size:12px">${c.connected_on || '—'}</td>
+          </tr>
+        `).join('')}</tbody>
+      </table>`;
+    }
+
+    function searchConnections() {
+      const q = document.getElementById('conn-search').value.toLowerCase();
+      const filtered = allConnections.filter(c =>
+        (c.name || '').toLowerCase().includes(q) || (c.company || '').toLowerCase().includes(q)
+      );
+      renderConnectionsTable(filtered.slice(0, 50));
+    }
+
+    async function matchConnections() {
+      const jobId = document.getElementById('match-job-select').value;
+      if (!jobId) return;
+      currentMatchedJobId = jobId;
+
+      const data = await fetch(`/api/network/match/${jobId}`).then(r => r.json());
+      const el = document.getElementById('match-results');
+      matchedConnections = data.connections;
+
+      if (!matchedConnections.length) {
+        el.innerHTML = `<p style="color:var(--text-muted);font-size:13px">No connections found at ${data.job.company}. Consider a direct or brief channel.</p>`;
+        document.getElementById('outreach-section').style.display = 'none';
+        return;
+      }
+
+      el.innerHTML = `
+        <p style="font-size:13px;color:var(--success);margin-bottom:8px">✓ Found ${matchedConnections.length} connection${matchedConnections.length > 1 ? 's' : ''} at ${data.job.company}</p>
+        ${matchedConnections.map(c => `
+          <div style="padding:6px 0;border-bottom:1px solid var(--border)">
+            <div style="font-weight:600;font-size:13px">${c.name}</div>
+            <div style="font-size:12px;color:var(--text-muted)">${c.title || '—'} at ${c.company || '—'}</div>
+          </div>
+        `).join('')}
+      `;
+
+      // Populate connection select
+      const connSel = document.getElementById('conn-select');
+      connSel.innerHTML = '<option value="">— select a connection —</option>';
+      matchedConnections.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = `${c.name} — ${c.title || ''} at ${c.company || ''}`;
+        connSel.appendChild(opt);
+      });
+      document.getElementById('outreach-section').style.display = 'block';
+    }
+
+    async function draftOutreach() {
+      const connId = document.getElementById('conn-select').value;
+      if (!connId || !currentMatchedJobId) return;
+      const include = document.getElementById('transparency-line').checked;
+
+      const status = document.getElementById('draft-status');
+      const btn = document.getElementById('draft-btn');
+      btn.disabled = true;
+      status.innerHTML = '<div class="loading"><div class="spinner"></div> Drafting...</div>';
+
+      const r = await fetch('/api/outreach/draft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ job_id: currentMatchedJobId, connection_id: connId, include_transparency_line: include })
+      });
+      const data = await r.json();
+      btn.disabled = false;
+
+      if (data.error) {
+        status.textContent = data.error;
+        status.style.color = 'var(--danger)';
+        return;
+      }
+      status.textContent = '✓ Draft ready — review below';
+      status.style.color = 'var(--success)';
+      loadOutreach();
+      openMessageEditor(data);
+    }
+
+    async function loadOutreach() {
+      const outreach = await fetch('/api/outreach').then(r => r.json());
+      const el = document.getElementById('outreach-list');
+      if (!outreach.length) {
+        el.innerHTML = '<div class="empty"><p>No outreach drafted yet.</p></div>';
+        return;
+      }
+      el.innerHTML = outreach.map(o => `
+        <div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-weight:600;font-size:13px">${o.connection_name || 'Contact'}</div>
+            <div style="font-size:12px;color:var(--text-muted)">${o.company} — ${o.title}</div>
+          </div>
+          <div class="btn-row">
+            <span class="badge ${o.status === 'sent' ? 'badge-sent' : o.status === 'approved' ? 'badge-approved' : 'badge-draft'}">${o.status}</span>
+            <button class="btn btn-ghost btn-sm" onclick="openMessageEditor(${JSON.stringify(o).replace(/"/g,'&quot;')})">Edit</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openMessageEditor(outreach) {
+      currentOutreachId = outreach.id;
+      document.getElementById('message-editor').style.display = 'block';
+      document.getElementById('message-text').value = outreach.message || '';
+      document.getElementById('message-meta').textContent = `To: ${outreach.connection_name || 'Contact'} · ${outreach.company} — ${outreach.title}`;
+      document.getElementById('message-editor').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    async function saveMessage() {
+      if (!currentOutreachId) return;
+      const r = await fetch(`/api/outreach/${currentOutreachId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: document.getElementById('message-text').value })
+      });
+      const data = await r.json();
+      const status = document.getElementById('msg-status');
+      status.textContent = data.success ? '✓ Saved' : data.error;
+      status.style.color = data.success ? 'var(--success)' : 'var(--danger)';
+    }
+
+    async function markSent() {
+      if (!currentOutreachId) return;
+      await saveMessage();
+      const r = await fetch(`/api/outreach/${currentOutreachId}/send`, { method: 'POST' });
+      const data = await r.json();
+      if (data.success) {
+        document.getElementById('msg-status').textContent = '✓ Marked as sent';
+        document.getElementById('msg-status').style.color = 'var(--success)';
+        loadOutreach();
+      }
+    }
+
+    function copyMessage() {
+      navigator.clipboard.writeText(document.getElementById('message-text').value);
+      document.getElementById('msg-status').textContent = '✓ Copied';
+      document.getElementById('msg-status').style.color = 'var(--success)';
+    }
+
+    loadJobs();
+    loadConnections();
+    loadOutreach();
+  </script>
+</body>
+</html>

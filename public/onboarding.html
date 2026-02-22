@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Envoy — Onboarding</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="sidebar-logo"><h1>Envoy</h1><p>Career Intelligence</p></div>
+    <a href="/" class="nav-link">&#9632; Dashboard</a>
+    <a href="/onboarding.html" class="nav-link active">&#9675; Onboarding</a>
+    <a href="/feed.html" class="nav-link">&#9632; Job Feed</a>
+    <a href="/brief.html" class="nav-link">&#9632; Briefs</a>
+    <a href="/materials.html" class="nav-link">&#9632; Materials</a>
+    <a href="/network.html" class="nav-link">&#9632; Network</a>
+    <a href="/pipeline.html" class="nav-link">&#9632; Pipeline</a>
+  </nav>
+
+  <main class="main">
+    <div class="page-header">
+      <h2>Profile Setup</h2>
+      <p>~90 minutes to a useful baseline. You control every piece of data.</p>
+    </div>
+
+    <div class="steps">
+      <div class="step active" onclick="showStep(1)" id="step-tab-1">1. Profile</div>
+      <div class="step" onclick="showStep(2)" id="step-tab-2">2. Preferences</div>
+      <div class="step" onclick="showStep(3)" id="step-tab-3">3. Urgency</div>
+    </div>
+
+    <!-- STEP 1: PROFILE -->
+    <div id="step-1">
+      <div class="card">
+        <div class="card-title">Import from LinkedIn</div>
+        <div class="alert alert-info">
+          <strong>How to export:</strong> LinkedIn → Settings → Data Privacy → Get a copy of your data → Select specific data: Profile, Positions, Skills, Education, Connections → Request archive → Upload the CSV files below.
+        </div>
+        <form id="csv-form">
+          <div class="two-col">
+            <div class="form-group">
+              <label>Profile.csv</label>
+              <input type="file" name="profile" accept=".csv">
+            </div>
+            <div class="form-group">
+              <label>Positions.csv</label>
+              <input type="file" name="positions" accept=".csv">
+            </div>
+            <div class="form-group">
+              <label>Skills.csv</label>
+              <input type="file" name="skills" accept=".csv">
+            </div>
+            <div class="form-group">
+              <label>Education.csv</label>
+              <input type="file" name="education" accept=".csv">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">Import LinkedIn Data</button>
+          <span id="csv-status" style="margin-left:12px;font-size:13px;color:var(--text-muted)"></span>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Profile (Manual Entry or Review)</div>
+        <div id="profile-form-container">
+          <div class="two-col">
+            <div class="form-group">
+              <label>Full Name</label>
+              <input type="text" id="pf-name" placeholder="Your name">
+            </div>
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="pf-email" placeholder="you@email.com">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Professional Headline</label>
+            <input type="text" id="pf-headline" placeholder="VP of Product at Acme | Building 0→1 SaaS">
+          </div>
+          <div class="form-group">
+            <label>Location</label>
+            <input type="text" id="pf-location" placeholder="San Francisco, CA">
+          </div>
+          <div class="form-group">
+            <label>Summary / Bio</label>
+            <textarea id="pf-summary" rows="5" placeholder="Your professional summary..."></textarea>
+          </div>
+          <div class="btn-row">
+            <button onclick="saveProfile()" class="btn btn-primary">Save Profile</button>
+            <span id="profile-status" style="font-size:13px;color:var(--text-muted)"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Work Experience</div>
+        <div id="experiences-list" style="margin-bottom:16px"></div>
+        <div id="exp-form">
+          <div class="two-col">
+            <div class="form-group">
+              <label>Company</label>
+              <input type="text" id="exp-company">
+            </div>
+            <div class="form-group">
+              <label>Title</label>
+              <input type="text" id="exp-title">
+            </div>
+            <div class="form-group">
+              <label>Start Date</label>
+              <input type="text" id="exp-start" placeholder="Jan 2020">
+            </div>
+            <div class="form-group">
+              <label>End Date</label>
+              <input type="text" id="exp-end" placeholder="Present">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <textarea id="exp-desc" rows="3" placeholder="Key responsibilities and achievements..."></textarea>
+          </div>
+          <button onclick="addExperience()" class="btn btn-secondary btn-sm">+ Add Experience</button>
+        </div>
+      </div>
+
+      <div style="text-align:right">
+        <button onclick="showStep(2)" class="btn btn-primary">Next: Preferences →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: PREFERENCES -->
+    <div id="step-2" style="display:none">
+      <div class="card">
+        <div class="card-title">Seven Dimensions — The Onboarding Interview</div>
+        <p style="color:var(--text-muted);font-size:13px;margin-bottom:20px">These teach the system what you actually want. Be honest — this is private.</p>
+
+        <div class="form-group">
+          <label>Work that energizes you</label>
+          <textarea id="pref-energizing" rows="3" placeholder="e.g. Building 0→1, working with ambiguous problems, cross-functional leadership..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Culture you thrive in</label>
+          <textarea id="pref-culture" rows="3" placeholder="e.g. High ownership, low bureaucracy, direct feedback, mission-driven..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Management style that brings out your best</label>
+          <textarea id="pref-management" rows="3" placeholder="e.g. Clear context, space to execute, regular 1:1s, challenge without micromanagement..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Team dynamics you want</label>
+          <textarea id="pref-team" rows="3" placeholder="e.g. Small tight team, senior peers, collaborative not competitive..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>What you are running toward</label>
+          <textarea id="pref-toward" rows="3" placeholder="e.g. First operator role, GM responsibility, building in AI/health/fintech..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>What compensation means to you</label>
+          <textarea id="pref-comp" rows="3" placeholder="e.g. Base matters for stability, equity for upside, not optimizing for max cash..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Why you are looking and what is driving the timing</label>
+          <textarea id="pref-motivation" rows="3" placeholder="e.g. Company pivoted away from my scope, ready for more, opportunity came through network..."></textarea>
+        </div>
+
+        <div class="btn-row">
+          <button onclick="savePreferences()" class="btn btn-primary">Save Preferences</button>
+          <span id="pref-status" style="font-size:13px;color:var(--text-muted)"></span>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between">
+        <button onclick="showStep(1)" class="btn btn-ghost">← Back</button>
+        <button onclick="showStep(3)" class="btn btn-primary">Next: Urgency →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: URGENCY -->
+    <div id="step-3" style="display:none">
+      <div class="card">
+        <div class="card-title">Urgency Setting</div>
+        <p style="color:var(--text-muted);font-size:13px;margin-bottom:20px">This is not a preference — it changes how the entire system behaves. Update at any time.</p>
+
+        <div class="urgency-grid" id="urgency-grid">
+          <div class="urgency-opt" data-val="30_days" onclick="selectUrgency(this)">
+            <div class="u-label">30 Days</div>
+            <div class="u-desc">Aggressive. Wider aperture, warm paths activated immediately.</div>
+          </div>
+          <div class="urgency-opt" data-val="60_days" onclick="selectUrgency(this)">
+            <div class="u-label">60 Days</div>
+            <div class="u-desc">Balanced. Mix of depth and speed.</div>
+          </div>
+          <div class="urgency-opt selected" data-val="90_days" onclick="selectUrgency(this)">
+            <div class="u-label">90 Days</div>
+            <div class="u-desc">Standard pace. Full briefs for high-conviction targets.</div>
+          </div>
+          <div class="urgency-opt" data-val="180_days" onclick="selectUrgency(this)">
+            <div class="u-label">180 Days</div>
+            <div class="u-desc">Maximum selectivity. Waits for strong signal.</div>
+          </div>
+          <div class="urgency-opt" data-val="open" onclick="selectUrgency(this)">
+            <div class="u-label">Open</div>
+            <div class="u-desc">Purely opportunistic. Only exceptional matches.</div>
+          </div>
+        </div>
+
+        <div style="margin-top:20px">
+          <label style="font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:8px">Mode</label>
+          <div style="display:flex;gap:8px">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;text-transform:none;font-weight:normal;font-size:14px">
+              <input type="radio" name="mode" value="light" id="mode-light" checked style="width:auto"> Light Mode (core features)
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;text-transform:none;font-weight:normal;font-size:14px">
+              <input type="radio" name="mode" value="full" id="mode-full" style="width:auto"> Full Mode (+ interview mirror)
+            </label>
+          </div>
+        </div>
+
+        <div class="btn-row" style="margin-top:20px">
+          <button onclick="saveUrgency()" class="btn btn-primary">Save & Finish Setup</button>
+          <span id="urgency-status" style="font-size:13px;color:var(--text-muted)"></span>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between">
+        <button onclick="showStep(2)" class="btn btn-ghost">← Back</button>
+        <a href="/" class="btn btn-success">Go to Dashboard →</a>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let selectedUrgency = '90_days';
+
+    function showStep(n) {
+      [1,2,3].forEach(i => {
+        document.getElementById(`step-${i}`).style.display = i === n ? 'block' : 'none';
+        document.getElementById(`step-tab-${i}`).classList.toggle('active', i === n);
+      });
+    }
+
+    function selectUrgency(el) {
+      document.querySelectorAll('.urgency-opt').forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedUrgency = el.dataset.val;
+    }
+
+    async function loadProfile() {
+      const data = await fetch('/api/profile').then(r => r.json());
+      if (data.profile) {
+        const p = data.profile;
+        document.getElementById('pf-name').value = p.name || '';
+        document.getElementById('pf-email').value = p.email || '';
+        document.getElementById('pf-headline').value = p.headline || '';
+        document.getElementById('pf-location').value = p.location || '';
+        document.getElementById('pf-summary').value = p.summary || '';
+        document.getElementById('pref-energizing').value = p.energizing_work || '';
+        document.getElementById('pref-culture').value = p.preferred_culture || '';
+        document.getElementById('pref-management').value = p.management_style || '';
+        document.getElementById('pref-team').value = p.team_dynamics || '';
+        document.getElementById('pref-toward').value = p.running_toward || '';
+        document.getElementById('pref-comp').value = p.compensation_meaning || '';
+        document.getElementById('pref-motivation').value = p.search_motivation || '';
+        if (p.urgency_setting) {
+          selectedUrgency = p.urgency_setting;
+          document.querySelectorAll('.urgency-opt').forEach(o => o.classList.toggle('selected', o.dataset.val === p.urgency_setting));
+        }
+        if (p.mode) {
+          document.getElementById(p.mode === 'full' ? 'mode-full' : 'mode-light').checked = true;
+        }
+      }
+      renderExperiences(data.experiences || []);
+    }
+
+    function renderExperiences(exps) {
+      const el = document.getElementById('experiences-list');
+      if (!exps.length) { el.innerHTML = '<p style="color:var(--text-muted);font-size:13px">No experience added yet.</p>'; return; }
+      el.innerHTML = exps.map(e => `
+        <div style="padding:8px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between">
+          <div>
+            <div style="font-weight:600;font-size:13px">${e.title}</div>
+            <div style="font-size:12px;color:var(--text-muted)">${e.company} · ${e.start_date}–${e.end_date}</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="deleteExp(${e.id})">✕</button>
+        </div>
+      `).join('');
+    }
+
+    async function deleteExp(id) {
+      await fetch(`/api/profile/experience/${id}`, { method: 'DELETE' });
+      loadProfile();
+    }
+
+    document.getElementById('csv-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const status = document.getElementById('csv-status');
+      status.textContent = 'Importing...';
+      const r = await fetch('/api/profile/upload-csv', { method: 'POST', body: fd });
+      const data = await r.json();
+      if (data.success) {
+        status.textContent = '✓ Imported successfully';
+        status.style.color = 'var(--success)';
+        loadProfile();
+      } else {
+        status.textContent = data.error;
+        status.style.color = 'var(--danger)';
+      }
+    });
+
+    async function saveProfile() {
+      const r = await fetch('/api/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: document.getElementById('pf-name').value,
+          email: document.getElementById('pf-email').value,
+          headline: document.getElementById('pf-headline').value,
+          location: document.getElementById('pf-location').value,
+          summary: document.getElementById('pf-summary').value,
+        })
+      });
+      const status = document.getElementById('profile-status');
+      const data = await r.json();
+      status.textContent = data.success ? '✓ Saved' : data.error;
+      status.style.color = data.success ? 'var(--success)' : 'var(--danger)';
+    }
+
+    async function addExperience() {
+      const r = await fetch('/api/profile/experience', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          company: document.getElementById('exp-company').value,
+          title: document.getElementById('exp-title').value,
+          start_date: document.getElementById('exp-start').value,
+          end_date: document.getElementById('exp-end').value,
+          description: document.getElementById('exp-desc').value,
+        })
+      });
+      if (r.ok) {
+        ['exp-company','exp-title','exp-start','exp-end','exp-desc'].forEach(id => document.getElementById(id).value = '');
+        loadProfile();
+      }
+    }
+
+    async function savePreferences() {
+      const r = await fetch('/api/profile/preferences', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          energizing_work: document.getElementById('pref-energizing').value,
+          preferred_culture: document.getElementById('pref-culture').value,
+          management_style: document.getElementById('pref-management').value,
+          team_dynamics: document.getElementById('pref-team').value,
+          running_toward: document.getElementById('pref-toward').value,
+          compensation_meaning: document.getElementById('pref-comp').value,
+          search_motivation: document.getElementById('pref-motivation').value,
+        })
+      });
+      const status = document.getElementById('pref-status');
+      const data = await r.json();
+      status.textContent = data.success ? '✓ Saved' : data.error;
+      status.style.color = data.success ? 'var(--success)' : 'var(--danger)';
+    }
+
+    async function saveUrgency() {
+      const mode = document.querySelector('input[name="mode"]:checked').value;
+      const r = await fetch('/api/profile/urgency', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ urgency_setting: selectedUrgency, mode })
+      });
+      const status = document.getElementById('urgency-status');
+      const data = await r.json();
+      status.textContent = data.success ? '✓ Saved' : data.error;
+      status.style.color = data.success ? 'var(--success)' : 'var(--danger)';
+    }
+
+    loadProfile();
+  </script>
+</body>
+</html>

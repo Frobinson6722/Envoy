@@ -171,7 +171,8 @@ input, textarea, select {
   transition: border-color 0.15s;
 }
 input:focus, textarea:focus, select:focus {
-  outline: none;
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
   border-color: var(--accent);
 }
 textarea { resize: vertical; min-height: 80px; }
@@ -254,9 +255,9 @@ select option { background: var(--bg-card); }
   cursor: pointer;
   transition: all 0.15s;
 }
-.swipe-pass { background: rgba(247,106,106,0.15); color: var(--danger); border: 1px solid rgba(247,106,106,0.3); }
+.swipe-pass { background: rgba(234,67,53,0.10); color: var(--danger); border: 1px solid rgba(234,67,53,0.25); }
 .swipe-pass:hover { background: var(--danger); color: #fff; }
-.swipe-right { background: rgba(78,205,196,0.15); color: var(--success); border: 1px solid rgba(78,205,196,0.3); }
+.swipe-right { background: rgba(52,168,83,0.10); color: var(--success); border: 1px solid rgba(52,168,83,0.25); }
 .swipe-right:hover { background: var(--success); color: #fff; }
 
 /* ── VOICE NOTE ── */

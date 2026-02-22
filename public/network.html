@@ -9,7 +9,7 @@
 <body>
   <nav class="sidebar">
     <div class="sidebar-logo"><h1>Envoy</h1><p>Career Intelligence</p></div>
-    <a href="/" class="nav-link">&#9632; Dashboard</a>
+    <a href="/dashboard.html" class="nav-link">&#9632; Dashboard</a>
     <a href="/onboarding.html" class="nav-link">&#9675; Onboarding</a>
     <a href="/feed.html" class="nav-link">&#9632; Job Feed</a>
     <a href="/brief.html" class="nav-link">&#9632; Briefs</a>
@@ -32,8 +32,8 @@
           <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">From your LinkedIn data export, upload <strong>Connections.csv</strong>.</p>
           <form id="conn-form">
             <div class="form-group">
-              <label>Connections.csv</label>
-              <input type="file" name="connections" accept=".csv" required>
+              <label for="connections-file">Connections.csv</label>
+              <input type="file" id="connections-file" name="connections" accept=".csv" required>
             </div>
             <div class="btn-row">
               <button type="submit" class="btn btn-primary">Import Connections</button>
@@ -68,7 +68,7 @@
           </div>
           <div class="form-group" style="display:flex;align-items:center;gap:8px">
             <input type="checkbox" id="transparency-line" style="width:auto">
-            <label style="text-transform:none;letter-spacing:0;font-weight:normal;font-size:13px;color:var(--text);margin:0">
+            <label for="transparency-line" style="text-transform:none;letter-spacing:0;font-weight:normal;font-size:13px;color:var(--text);margin:0">
               Add transparency line (P.S. about research assistant)
             </label>
           </div>

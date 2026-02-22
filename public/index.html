@@ -4,598 +4,655 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Envoy — Private Career Intelligence</title>
-  <link rel="stylesheet" href="/css/style.css">
   <style>
-    body.landing-page {
-      display: block;
-      background: #fff;
+    /* ── RESET ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+
+    /* ── TOKENS ────────────────────────────────────────── */
+    :root {
+      --bg:   #fbfbfc;
+      --fg:   #0b0b0f;
+      --muted: rgba(11,11,15,.62);
+      --dim:   rgba(11,11,15,.38);
+      --hair:  rgba(11,11,15,.07);
+      --card:  rgba(255,255,255,.80);
+      --max:   1120px;
+      --r:     16px;
+
+      --h1:   56px;
+      --h2:   32px;
+      --sub:  20px;
+      --body: 18px;
+      --sm:   14px;
+
+      --lh-tight: 1.05;
+      --lh-head:  1.15;
+      --lh-body:  1.6;
+      --track-tight: -0.02em;
     }
 
-    /* ── TOP NAV ── */
-    .lp-nav {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: #fff;
-      border-bottom: 1px solid var(--border);
+    /* ── BASE ──────────────────────────────────────────── */
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+                   "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      font-size: var(--body);
+      line-height: var(--lh-body);
+    }
+    a { color: inherit; }
+
+    /* ── LAYOUT ────────────────────────────────────────── */
+    .container {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 0 clamp(24px, 4.5vw, 72px);
+    }
+    .section {
+      padding: clamp(56px, 8vw, 96px) 0;
+    }
+
+    /* ── NAV ───────────────────────────────────────────── */
+    .nav {
+      height: 72px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 40px;
-      height: 60px;
+      border-bottom: 1px solid var(--hair);
     }
-    .lp-logo {
-      font-size: 20px;
-      font-weight: 700;
-      letter-spacing: -0.5px;
+    .nav-logo {
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
       text-decoration: none;
+      color: var(--fg);
     }
-    .lp-logo span:nth-child(1) { color: #4285f4; }
-    .lp-logo span:nth-child(2) { color: #ea4335; }
-    .lp-logo span:nth-child(3) { color: #fbbc05; }
-    .lp-logo span:nth-child(4) { color: #34a853; }
-    .lp-logo span:nth-child(5) { color: #4285f4; }
-    .lp-logo span:nth-child(6) { color: #ea4335; }
-    .lp-nav-links { display: flex; align-items: center; gap: 12px; }
+    .nav-signin {
+      font-size: 15px;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color .1s;
+    }
+    .nav-signin:hover { color: var(--fg); }
 
-    /* ── SECTIONS ── */
-    .lp-section {
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 72px 40px;
-    }
-    .lp-section-full {
-      padding: 72px 40px;
-    }
-    .lp-section-full > .lp-inner {
-      max-width: 960px;
-      margin: 0 auto;
+    /* ── CARD ──────────────────────────────────────────── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--hair);
+      border-radius: var(--r);
     }
 
-    /* ── HERO ── */
-    .hero {
-      text-align: center;
-      padding: 96px 40px 80px;
-      max-width: 760px;
-      margin: 0 auto;
-    }
-    .hero-eyebrow {
-      display: inline-block;
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      color: var(--accent);
-      background: var(--accent-dim);
-      padding: 4px 12px;
-      border-radius: 20px;
-      margin-bottom: 24px;
-    }
-    .hero h1 {
-      font-size: 44px;
-      font-weight: 700;
-      letter-spacing: -1.5px;
-      line-height: 1.1;
-      color: var(--text);
-      margin-bottom: 20px;
-    }
-    .hero h1 em {
-      font-style: normal;
-      color: var(--accent);
-    }
-    .hero p {
-      font-size: 18px;
-      color: var(--text-muted);
-      line-height: 1.6;
-      max-width: 560px;
-      margin: 0 auto 36px;
-    }
-    .hero-cta {
-      display: flex;
-      gap: 12px;
+    /* ── BUTTONS ───────────────────────────────────────── */
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
       justify-content: center;
+      height: 48px;
+      padding: 0 22px;
+      border-radius: 999px;
+      background: var(--fg);
+      color: #fff;
+      font-weight: 600;
+      font-size: 15px;
+      font-family: inherit;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: transform .12s ease, opacity .12s ease;
+    }
+    .btn-primary:hover  { transform: translateY(-1px); opacity: .93; }
+    .btn-primary:active { transform: none; opacity: .88; }
+
+    .text-link {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--muted);
+      text-decoration: none;
+      white-space: nowrap;
+      transition: color .1s;
+    }
+    .text-link:hover { color: var(--fg); }
+
+    /* ── HERO ──────────────────────────────────────────── */
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      column-gap: 48px;
+      align-items: center;
+    }
+    .hero-copy { max-width: 560px; }
+
+    h1 {
+      font-size: var(--h1);
+      line-height: var(--lh-tight);
+      letter-spacing: var(--track-tight);
+      font-weight: 700;
+      color: var(--fg);
+    }
+    .hero-sub {
+      font-size: var(--sub);
+      line-height: 1.4;
+      color: var(--muted);
+      margin-top: 16px;
+    }
+    .cta-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-top: 24px;
       flex-wrap: wrap;
     }
-    .hero-note {
-      margin-top: 16px;
-      font-size: 12px;
-      color: var(--text-dim);
-    }
-
-    /* ── SECTION LABELS ── */
-    .section-label {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      color: var(--text-dim);
-      margin-bottom: 8px;
-    }
-    .section-title {
-      font-size: 28px;
-      font-weight: 700;
-      letter-spacing: -0.8px;
-      color: var(--text);
-      margin-bottom: 8px;
-      line-height: 1.2;
-    }
-    .section-sub {
-      font-size: 15px;
-      color: var(--text-muted);
-      margin-bottom: 40px;
-      line-height: 1.6;
-    }
-
-    /* ── THE DEAL ── */
-    .deal-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-    }
-    .deal-col {
-      border-radius: var(--radius);
-      padding: 28px;
-    }
-    .deal-col.ask {
-      background: rgba(234,67,53,0.05);
-      border: 1px solid rgba(234,67,53,0.15);
-    }
-    .deal-col.get {
-      background: rgba(52,168,83,0.05);
-      border: 1px solid rgba(52,168,83,0.15);
-    }
-    .deal-col-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    .deal-col-icon {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-      flex-shrink: 0;
-    }
-    .ask .deal-col-icon { background: rgba(234,67,53,0.12); }
-    .get .deal-col-icon { background: rgba(52,168,83,0.12); }
-    .deal-col-header h3 {
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--text);
-    }
-    .deal-group {
-      margin-bottom: 20px;
-    }
-    .deal-group:last-child { margin-bottom: 0; }
-    .deal-group-label {
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: var(--text-dim);
-      margin-bottom: 8px;
-    }
-    .deal-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-      font-size: 13px;
-      color: var(--text-muted);
-      line-height: 1.5;
-      margin-bottom: 6px;
-    }
-    .deal-item:last-child { margin-bottom: 0; }
-    .deal-dot {
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      margin-top: 6px;
-      flex-shrink: 0;
-    }
-    .ask .deal-dot { background: #ea4335; }
-    .get .deal-dot { background: #34a853; }
-    .deal-item strong { color: var(--text); }
-
-    /* ── THE LOOP ── */
-    .loop-bg {
-      background: var(--bg-card);
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-    }
-    .loop-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 2px;
-    }
-    .loop-phase {
-      padding: 24px 20px;
-      position: relative;
-    }
-    .loop-phase + .loop-phase::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 24px;
-      bottom: 24px;
-      width: 1px;
-      background: var(--border);
-    }
-    .loop-phase-label {
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 1.2px;
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .loop-phase-label .lp-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-    .loop-step {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-    .loop-step:last-child { margin-bottom: 0; }
-    .loop-num {
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      font-size: 11px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      flex-shrink: 0;
-    }
-    .loop-step-text {
-      font-size: 13px;
-      color: var(--text-muted);
+    .micro {
+      margin-top: 12px;
+      font-size: var(--sm);
       line-height: 1.4;
-      padding-top: 2px;
-    }
-    .loop-step-text strong { color: var(--text); display: block; margin-bottom: 1px; font-size: 12px; }
-    .loop-step-time {
-      font-size: 10px;
-      color: var(--text-dim);
-      margin-top: 2px;
+      color: rgba(11,11,15,.42);
     }
 
-    /* ── PRINCIPLES ── */
-    .principles-grid {
+    /* hero visual card */
+    .hero-visual {
+      padding: 24px;
+      min-height: 320px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ── SNAPSHOT MOCK ─────────────────────────────────── */
+    .snapshot { width: 100%; font-size: 13px; }
+
+    .snapshot-hd {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .snapshot-tag {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .09em;
+      color: var(--dim);
+    }
+    .snapshot-date { font-size: 11px; color: var(--dim); }
+
+    .snap-rule { height: 1px; background: var(--hair); margin-bottom: 14px; }
+
+    .snap-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--hair);
+    }
+    .snap-row:last-of-type { border-bottom: none; }
+    .snap-co   { font-size: 13px; font-weight: 600; color: var(--fg); }
+    .snap-role { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+
+    .snap-badge {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 9px;
+      border-radius: 5px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-left: 12px;
+    }
+    .badge-s { background: rgba(11,11,15,.06); color: rgba(11,11,15,.62); }
+    .badge-p { background: rgba(11,11,15,.03); color: rgba(11,11,15,.40); }
+
+    .snap-ft {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--hair);
+    }
+    .snap-stats { display: flex; gap: 20px; }
+    .snap-stat  { font-size: 11px; color: var(--dim); line-height: 1.3; }
+    .snap-stat strong { font-size: 20px; font-weight: 700; color: var(--fg); display: block; }
+
+    .mini-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      height: 28px;
+    }
+    .mini-bar {
+      width: 5px;
+      border-radius: 2px;
+      background: rgba(11,11,15,.11);
+    }
+
+    /* ── SECTION HEADINGS ──────────────────────────────── */
+    h2 {
+      font-size: var(--h2);
+      line-height: var(--lh-head);
+      letter-spacing: -0.015em;
+      font-weight: 700;
+      color: var(--fg);
+    }
+
+    /* ── OUTPUTS (3 cards) ─────────────────────────────── */
+    .grid3 {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
+      gap: 16px;
+      margin-top: 32px;
     }
-    .principle-card {
-      padding: 24px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      background: #fff;
-    }
-    .principle-marker {
-      width: 36px;
-      height: 4px;
-      border-radius: 2px;
-      margin-bottom: 16px;
-    }
-    .principle-card h3 {
-      font-size: 14px;
+    .out-card { padding: 24px; }
+    .out-label {
+      font-size: 10.5px;
       font-weight: 700;
-      color: var(--text);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--dim);
+      margin-bottom: 10px;
+    }
+    .out-title {
+      font-size: 18px;
+      font-weight: 600;
       margin-bottom: 8px;
     }
-    .principle-card p {
-      font-size: 13px;
-      color: var(--text-muted);
-      line-height: 1.6;
+    .out-desc {
+      font-size: 15px;
+      color: var(--muted);
+      line-height: 1.5;
     }
+    .out-icon { margin-top: 20px; }
 
-    /* ── BOTTOM CTA ── */
-    .lp-cta-section {
-      text-align: center;
-      padding: 80px 40px;
-      background: var(--bg-card);
-      border-top: 1px solid var(--border);
+    /* ── HOW IT WORKS (4 steps) ────────────────────────── */
+    .steps-bg {
+      background: rgba(255,255,255,.55);
+      border-top: 1px solid var(--hair);
+      border-bottom: 1px solid var(--hair);
     }
-    .lp-cta-section h2 {
-      font-size: 32px;
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-top: 24px;
+    }
+    .step {
+      padding: 20px;
+      border: 1px solid var(--hair);
+      border-radius: 14px;
+      background: rgba(255,255,255,.7);
+    }
+    .step-num {
+      font-size: 11px;
       font-weight: 700;
-      letter-spacing: -0.8px;
-      color: var(--text);
-      margin-bottom: 12px;
+      letter-spacing: .06em;
+      color: var(--dim);
+      margin-bottom: 8px;
     }
-    .lp-cta-section p {
-      font-size: 16px;
-      color: var(--text-muted);
-      max-width: 480px;
-      margin: 0 auto 32px;
-      line-height: 1.6;
-    }
-    .lp-cta-links {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    .lp-already {
-      font-size: 13px;
-      color: var(--text-muted);
-    }
-    .lp-already a {
-      color: var(--accent);
-      text-decoration: none;
-      font-weight: 600;
-    }
-    .lp-already a:hover { text-decoration: underline; }
+    .step-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+    .step-desc  { font-size: 15px; color: var(--muted); line-height: 1.5; }
 
-    @media (max-width: 800px) {
-      .hero h1 { font-size: 30px; }
-      .deal-grid { grid-template-columns: 1fr; }
-      .loop-grid { grid-template-columns: 1fr 1fr; }
-      .principles-grid { grid-template-columns: 1fr; }
-      .lp-nav { padding: 0 20px; }
-      .lp-section { padding: 48px 20px; }
-      .lp-section-full { padding: 48px 20px; }
+    /* ── DIFFERENTIATION ───────────────────────────────── */
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      margin-top: 24px;
+      overflow: hidden;
     }
-    @media (max-width: 500px) {
-      .loop-grid { grid-template-columns: 1fr; }
-      .loop-phase + .loop-phase::before { display: none; }
+    .cmp-col { padding: 28px 32px; }
+    .cmp-col + .cmp-col { border-left: 1px solid var(--hair); }
+    .cmp-head {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+    .cmp-dim .cmp-head { color: var(--muted); }
+    .cmp-list { list-style: none; }
+    .cmp-list li {
+      font-size: 15px;
+      color: var(--muted);
+      padding: 9px 0;
+      border-bottom: 1px solid var(--hair);
+      line-height: 1.45;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .cmp-list li:last-child { border-bottom: none; }
+    .cmp-list li::before {
+      content: '';
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: currentColor;
+      opacity: .4;
+      margin-top: 8px;
+      flex-shrink: 0;
+    }
+    .cmp-dim .cmp-list li { color: rgba(11,11,15,.36); }
+
+    /* ── PRIVACY ───────────────────────────────────────── */
+    .privacy-card { padding: 28px 32px; }
+    .privacy-head {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: var(--fg);
+    }
+    .privacy-bullets { display: flex; flex-direction: column; gap: 10px; }
+    .privacy-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: var(--body);
+      color: var(--fg);
+    }
+    .privacy-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: rgba(11,11,15,.22);
+      flex-shrink: 0;
+    }
+
+    /* ── FINAL CTA ─────────────────────────────────────── */
+    .final-wrap {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .final-card {
+      padding: 56px 48px;
+      width: 100%;
+      max-width: 640px;
+      text-align: center;
+    }
+    .final-card h2 { margin-bottom: 20px; }
+    .final-note {
+      margin-top: 12px;
+      font-size: var(--sm);
+      line-height: 1.4;
+      color: rgba(11,11,15,.40);
+    }
+
+    /* ── FOOTER ────────────────────────────────────────── */
+    .footer { border-top: 1px solid var(--hair); padding: 32px 0; }
+    .footer-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      font-size: var(--sm);
+      color: var(--dim);
+    }
+    .footer-links { display: flex; gap: 20px; }
+    .footer a { color: var(--dim); text-decoration: none; transition: color .1s; }
+    .footer a:hover { color: var(--fg); }
+
+    /* ── RESPONSIVE ────────────────────────────────────── */
+    @media (max-width: 900px) {
+      :root { --h1: 40px; --sub: 18px; --body: 16.5px; --h2: 28px; }
+      .hero-grid { grid-template-columns: 1fr; gap: 28px; }
+      .hero-copy { max-width: 100%; }
+      .grid3 { grid-template-columns: 1fr; }
+      .steps { grid-template-columns: 1fr 1fr; }
+      .compare { grid-template-columns: 1fr; }
+      .cmp-col + .cmp-col { border-left: none; border-top: 1px solid var(--hair); }
+      .hero-visual { min-height: 240px; }
+      .final-card { padding: 40px 28px; }
+    }
+    @media (max-width: 580px) {
+      .steps { grid-template-columns: 1fr; }
+      .privacy-card { padding: 24px; }
     }
   </style>
 </head>
 <body class="landing-page">
 
-  <!-- TOP NAV -->
-  <nav class="lp-nav">
-    <a href="/" class="lp-logo">
-      <span>E</span><span>n</span><span>v</span><span>o</span><span>y</span>
-    </a>
-    <div class="lp-nav-links">
-      <a href="/dashboard.html" class="btn btn-ghost btn-sm">Dashboard</a>
-      <a href="/onboarding.html" class="btn btn-primary btn-sm">Get Started →</a>
-    </div>
-  </nav>
-
-  <!-- HERO -->
-  <div class="hero">
-    <span class="hero-eyebrow">Private Career Intelligence</span>
-    <h1>Stop applying blindly.<br><em>Start targeting.</em></h1>
-    <p>Envoy learns what you actually want, analyzes every role you find, and tells you exactly how to approach each one — without sending your data to job boards or recruiters.</p>
-    <div class="hero-cta">
-      <a href="/onboarding.html" class="btn btn-primary" style="padding:12px 24px;font-size:15px">Set up your profile — it's free</a>
-      <a href="/dashboard.html" class="btn btn-ghost" style="padding:12px 24px;font-size:15px">Go to Dashboard</a>
-    </div>
-    <p class="hero-note">Takes about 30 minutes. Everything builds on it.</p>
+  <!-- ── 0. NAV ─────────────────────────────────────────── -->
+  <div class="container">
+    <nav class="nav">
+      <a href="/" class="nav-logo">Envoy</a>
+      <a href="/dashboard.html" class="nav-signin">Sign in</a>
+    </nav>
   </div>
 
-  <!-- THE REGULAR LOOP -->
-  <div class="loop-bg">
-    <div class="lp-section-full">
-      <div class="lp-inner">
-        <div class="section-label">The regular loop</div>
-        <div class="section-title">What using Envoy actually looks like</div>
-        <div class="section-sub">Envoy is built around a repeating rhythm. Each cycle takes minutes, not hours — and the system gets better as you use it.</div>
-      </div>
-      <div class="lp-inner">
-        <div class="loop-grid">
+  <!-- ── 1. HERO ────────────────────────────────────────── -->
+  <div class="container">
+    <div class="section">
+      <div class="hero-grid">
 
-          <div class="loop-phase">
-            <div class="loop-phase-label" style="color:#4285f4">
-              <span class="lp-dot" style="background:#4285f4"></span>
-              When you find a role (~3 min)
+        <!-- Copy -->
+        <div class="hero-copy">
+          <h1>Your private career engine.</h1>
+          <p class="hero-sub">Track targets, capture outcomes, and refine your positioning as signals arrive.</p>
+          <div class="cta-row">
+            <a href="/onboarding.html" class="btn-primary">Set up my profile</a>
+            <a href="/dashboard.html" class="text-link">See example output →</a>
+          </div>
+          <p class="micro">Free to start. Private by default.</p>
+        </div>
+
+        <!-- Hero visual: Market Snapshot mock -->
+        <div class="card hero-visual">
+          <div class="snapshot">
+            <div class="snapshot-hd">
+              <span class="snapshot-tag">Market Snapshot</span>
+              <span class="snapshot-date">Feb 2026</span>
             </div>
-            <div class="loop-step">
-              <div class="loop-num" style="background:#4285f4">1</div>
-              <div class="loop-step-text">
-                <strong>Paste into Job Feed</strong>
-                Copy the job description from anywhere — LinkedIn, company site, a referral.
+            <div class="snap-rule"></div>
+
+            <div class="snap-row">
+              <div>
+                <div class="snap-co">Stripe</div>
+                <div class="snap-role">Head of Growth · Late-stage</div>
               </div>
+              <span class="snap-badge badge-s">Strong fit</span>
             </div>
-            <div class="loop-step">
-              <div class="loop-num" style="background:#4285f4">2</div>
-              <div class="loop-step-text">
-                <strong>Envoy analyzes it</strong>
-                AI scores fit against your profile and recommends your best contact channel — in ~60 seconds.
+            <div class="snap-row">
+              <div>
+                <div class="snap-co">Linear</div>
+                <div class="snap-role">Product Lead · Series B</div>
               </div>
+              <span class="snap-badge badge-p">Possible</span>
             </div>
-            <div class="loop-step">
-              <div class="loop-num" style="background:#4285f4">3</div>
-              <div class="loop-step-text">
-                <strong>Swipe right or pass</strong>
-                Right = enters your pipeline. Left = pass with a quick note that teaches your real filters.
+            <div class="snap-row">
+              <div>
+                <div class="snap-co">Notion</div>
+                <div class="snap-role">GTM Lead · Growth</div>
+              </div>
+              <span class="snap-badge badge-s">Strong fit</span>
+            </div>
+            <div class="snap-row">
+              <div>
+                <div class="snap-co">Figma</div>
+                <div class="snap-role">Dir. of Marketing · Public</div>
+              </div>
+              <span class="snap-badge badge-p">Possible</span>
+            </div>
+
+            <div class="snap-ft">
+              <div class="snap-stats">
+                <div class="snap-stat"><strong>6</strong>targets</div>
+                <div class="snap-stat"><strong>2</strong>strong fit</div>
+                <div class="snap-stat"><strong>1</strong>in pipeline</div>
+              </div>
+              <div class="mini-bars" aria-hidden="true">
+                <div class="mini-bar" style="height:9px"></div>
+                <div class="mini-bar" style="height:16px"></div>
+                <div class="mini-bar" style="height:12px"></div>
+                <div class="mini-bar" style="height:22px"></div>
+                <div class="mini-bar" style="height:18px"></div>
+                <div class="mini-bar" style="height:28px"></div>
               </div>
             </div>
           </div>
-
-          <div class="loop-phase">
-            <div class="loop-phase-label" style="color:#ea4335">
-              <span class="lp-dot" style="background:#ea4335"></span>
-              For high-conviction targets (~15 min)
-            </div>
-            <div class="loop-step">
-              <div class="loop-num" style="background:#ea4335">4</div>
-              <div class="loop-step-text">
-                <strong>Generate a Brief</strong>
-                Full intelligence on the company, the role, and your specific thesis. Edit it in the Drafting Room, then approve.
-              </div>
-            </div>
-            <div class="loop-step">
-              <div class="loop-num" style="background:#ea4335">5</div>
-              <div class="loop-step-text">
-                <strong>Find a warm path</strong>
-                Envoy matches your LinkedIn network to the company and shows who you know inside.
-              </div>
-            </div>
-            <div class="loop-step">
-              <div class="loop-num" style="background:#ea4335">6</div>
-              <div class="loop-step-text">
-                <strong>Draft outreach</strong>
-                AI writes a warm intro message. You approve it, copy it, and send it yourself.
-              </div>
-            </div>
-          </div>
-
-          <div class="loop-phase">
-            <div class="loop-phase-label" style="color:#fbbc05">
-              <span class="lp-dot" style="background:#fbbc05"></span>
-              After every conversation (~1 min)
-            </div>
-            <div class="loop-step">
-              <div class="loop-num" style="background:#fbbc05">7</div>
-              <div class="loop-step-text">
-                <strong>Update Pipeline stage</strong>
-                Move the opportunity forward — Screener, Hiring Manager, Offer. Add a quick note about what happened.
-              </div>
-            </div>
-            <div class="loop-step" style="margin-top:12px">
-              <div class="loop-num" style="background:#fbbc05">8</div>
-              <div class="loop-step-text">
-                <strong>Generate Materials when ready</strong>
-                Tailored resume and cover letter for roles you're ready to apply for. Edit, approve, then copy to submit.
-              </div>
-            </div>
-          </div>
-
-          <div class="loop-phase">
-            <div class="loop-phase-label" style="color:#34a853">
-              <span class="lp-dot" style="background:#34a853"></span>
-              Monthly (5 min)
-            </div>
-            <div class="loop-step">
-              <div class="loop-num" style="background:#34a853">9</div>
-              <div class="loop-step-text">
-                <strong>Generate a Performance Digest</strong>
-                AI analyzes your conversion rates — how many roles → screener calls → offers. Shows you what's working and what to change.
-              </div>
-            </div>
-            <div class="loop-step" style="margin-top:12px">
-              <div class="loop-num" style="background:#34a853">10</div>
-              <div class="loop-step-text">
-                <strong>Adjust your Urgency</strong>
-                Update your search urgency if timing has changed. The whole system adapts immediately.
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- THE DEAL -->
-  <div class="lp-section">
-    <div class="section-label">The exchange</div>
-    <div class="section-title">What Envoy asks, and what you get back</div>
-    <div class="section-sub">Envoy is a tool, not a service. What you put in determines what you get out.</div>
-
-    <div class="deal-grid">
-
-      <div class="deal-col ask">
-        <div class="deal-col-header">
-          <div class="deal-col-icon">📋</div>
-          <h3>What Envoy asks of you</h3>
-        </div>
-
-        <div class="deal-group">
-          <div class="deal-group-label">One-time setup (~30 min)</div>
-          <div class="deal-item"><span class="deal-dot"></span><span>Import your LinkedIn profile or fill in your background manually</span></div>
-          <div class="deal-item"><span class="deal-dot"></span><span>Answer the <strong>Seven Dimensions</strong> — what energizes you, the culture you want, how you think about comp, and why you're looking</span></div>
-          <div class="deal-item"><span class="deal-dot"></span><span>Upload your LinkedIn Connections.csv once to enable warm-path routing</span></div>
-        </div>
-
-        <div class="deal-group">
-          <div class="deal-group-label">Per role you find (~2–3 min)</div>
-          <div class="deal-item"><span class="deal-dot"></span><span>Paste the job description into the Job Feed</span></div>
-          <div class="deal-item"><span class="deal-dot"></span><span>Swipe right if interested, left to pass — leave a short note explaining why</span></div>
-        </div>
-
-        <div class="deal-group">
-          <div class="deal-group-label">Before anything leaves Envoy</div>
-          <div class="deal-item"><span class="deal-dot"></span><span>Review and approve every AI-generated brief, resume, cover letter, and message</span></div>
-          <div class="deal-item"><span class="deal-dot"></span><span>Copy and send manually — Envoy never sends on your behalf</span></div>
-        </div>
-      </div>
-
-      <div class="deal-col get">
-        <div class="deal-col-header">
-          <div class="deal-col-icon">✦</div>
-          <h3>What you get back</h3>
-        </div>
-
-        <div class="deal-group">
-          <div class="deal-group-label">For every role you add</div>
-          <div class="deal-item"><span class="deal-dot"></span><span><strong>AI fit analysis in ~60 seconds</strong> — does this role match what you actually want?</span></div>
-          <div class="deal-item"><span class="deal-dot"></span><span><strong>Recommended contact channel</strong> — warm intro, direct outreach, LinkedIn, or full brief</span></div>
-          <div class="deal-item"><span class="deal-dot"></span><span>3–5 year trajectory assessment for the role</span></div>
-        </div>
-
-        <div class="deal-group">
-          <div class="deal-group-label">For high-conviction targets</div>
-          <div class="deal-item"><span class="deal-dot"></span><span><strong>Full intelligence brief</strong> (500–800 words) on the company arc, why this role exists, and your specific thesis</span></div>
-          <div class="deal-item"><span class="deal-dot"></span><span><strong>Warm path routing</strong> — which of your connections can get you in front of the right person</span></div>
-          <div class="deal-item"><span class="deal-dot"></span><span>AI-drafted warm outreach message in your voice (authenticity-scored)</span></div>
-          <div class="deal-item"><span class="deal-dot"></span><span><strong>Tailored resume and cover letter</strong> built from your profile for that specific role</span></div>
-        </div>
-
-        <div class="deal-group">
-          <div class="deal-group-label">Across your whole search</div>
-          <div class="deal-item"><span class="deal-dot"></span><span>Pipeline tracking from first look to offer — see every opportunity in one place</span></div>
-          <div class="deal-item"><span class="deal-dot"></span><span><strong>Monthly performance digest</strong> — conversion rates, what's working, where to focus</span></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- PRINCIPLES -->
-  <div style="background:var(--bg-card);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
-    <div class="lp-section">
-      <div class="section-label">How Envoy is different</div>
-      <div class="section-title">Three things most job tools get wrong</div>
-      <div class="principles-grid">
-
-        <div class="principle-card">
-          <div class="principle-marker" style="background:#4285f4"></div>
-          <h3>You approve everything</h3>
-          <p>Envoy drafts — you decide. No application, message, resume, or brief goes anywhere without your explicit approval. The AI does the research and writing. You maintain complete control over what actually gets used.</p>
-        </div>
-
-        <div class="principle-card">
-          <div class="principle-marker" style="background:#ea4335"></div>
-          <h3>Your data stays private</h3>
-          <p>Your profile, preferences, and search activity are never shared with job boards, recruiters, or third parties. Envoy is a tool for you — not a lead-generation platform for employers. Your search is your business.</p>
-        </div>
-
-        <div class="principle-card">
-          <div class="principle-marker" style="background:#34a853"></div>
-          <h3>The system learns over time</h3>
-          <p>Every pass note you leave, every preference you answer honestly, every urgency change — it all sharpens Envoy's understanding of your real filters. The analysis gets more accurate the longer you use it.</p>
         </div>
 
       </div>
     </div>
   </div>
 
-  <!-- BOTTOM CTA -->
-  <div class="lp-cta-section">
-    <h2>Ready to run a smarter search?</h2>
-    <p>Set up your profile. It takes about 30 minutes and the whole system builds on it. You can refine it any time.</p>
-    <div class="lp-cta-links">
-      <a href="/onboarding.html" class="btn btn-primary" style="padding:12px 28px;font-size:15px">Start Profile Setup →</a>
+  <!-- ── 2. WHAT YOU GET ────────────────────────────────── -->
+  <div class="container">
+    <div class="section">
+      <h2>What you get</h2>
+      <div class="grid3">
+
+        <div class="card out-card">
+          <div class="out-label">Output 01</div>
+          <div class="out-title">Market Snapshot</div>
+          <div class="out-desc">A live read of where you stand across your target companies — fit, timing, and signal strength.</div>
+          <div class="out-icon" aria-hidden="true">
+            <svg width="52" height="26" viewBox="0 0 52 26" fill="none">
+              <rect x="0"  y="14" width="7" height="12" rx="2" fill="rgba(11,11,15,.09)"/>
+              <rect x="11" y="8"  width="7" height="18" rx="2" fill="rgba(11,11,15,.13)"/>
+              <rect x="22" y="4"  width="7" height="22" rx="2" fill="rgba(11,11,15,.17)"/>
+              <rect x="33" y="9"  width="7" height="17" rx="2" fill="rgba(11,11,15,.12)"/>
+              <rect x="44" y="0"  width="7" height="26" rx="2" fill="rgba(11,11,15,.20)"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="card out-card">
+          <div class="out-label">Output 02</div>
+          <div class="out-title">Positioning Upgrade</div>
+          <div class="out-desc">Targeted refinements to how you present yourself — specific to each role and company arc.</div>
+          <div class="out-icon" aria-hidden="true">
+            <svg width="52" height="26" viewBox="0 0 52 26" fill="none">
+              <polyline points="2,22 13,15 24,17 35,8 50,2"
+                stroke="rgba(11,11,15,.18)" stroke-width="2"
+                fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="50" cy="2" r="3" fill="rgba(11,11,15,.18)"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="card out-card">
+          <div class="out-label">Output 03</div>
+          <div class="out-title">Funnel Intel</div>
+          <div class="out-desc">Conversion data across your pipeline — where you're losing signal and what to change next cycle.</div>
+          <div class="out-icon" aria-hidden="true">
+            <svg width="34" height="28" viewBox="0 0 34 28" fill="none">
+              <path d="M2 2h30L22 13v11l-10 2V13L2 2z"
+                stroke="rgba(11,11,15,.18)" stroke-width="1.5"
+                fill="rgba(11,11,15,.05)"
+                stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+
+      </div>
     </div>
-    <p class="lp-already" style="margin-top:20px">Already set up? <a href="/dashboard.html">Go to your Dashboard →</a></p>
+  </div>
+
+  <!-- ── 3. HOW IT WORKS ────────────────────────────────── -->
+  <div class="steps-bg">
+    <div class="container">
+      <div class="section">
+        <h2>How it works</h2>
+        <div class="steps">
+
+          <div class="step">
+            <div class="step-num">01</div>
+            <div class="step-title">Define targets</div>
+            <div class="step-desc">Set the role type, culture, and comp range that actually matters to you.</div>
+          </div>
+
+          <div class="step">
+            <div class="step-num">02</div>
+            <div class="step-title">Add opportunities</div>
+            <div class="step-desc">Paste any job description. Envoy scores fit and recommends how to approach it.</div>
+          </div>
+
+          <div class="step">
+            <div class="step-num">03</div>
+            <div class="step-title">Track outcomes</div>
+            <div class="step-desc">Log every conversation and stage change. One tap, no friction.</div>
+          </div>
+
+          <div class="step">
+            <div class="step-num">04</div>
+            <div class="step-title">Envoy adapts</div>
+            <div class="step-desc">As signals arrive, your positioning and targeting sharpen automatically.</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 4. DIFFERENTIATION ─────────────────────────────── -->
+  <div class="container">
+    <div class="section">
+      <h2>Why not just a tracker?</h2>
+      <div class="card compare">
+
+        <div class="cmp-col cmp-dim">
+          <div class="cmp-head">A tracker</div>
+          <ul class="cmp-list">
+            <li>Records what happened</li>
+            <li>You decide what to track</li>
+            <li>Static until you update it</li>
+          </ul>
+        </div>
+
+        <div class="cmp-col">
+          <div class="cmp-head">Envoy</div>
+          <ul class="cmp-list">
+            <li>Learns your real filters over time</li>
+            <li>Synthesizes signals as they arrive</li>
+            <li>Adapts your positioning automatically</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 5. PRIVACY ─────────────────────────────────────── -->
+  <div class="container" style="padding-bottom: clamp(56px, 8vw, 96px);">
+    <div class="card privacy-card">
+      <div class="privacy-head">Built for privacy, not discovery</div>
+      <div class="privacy-bullets">
+        <div class="privacy-item">
+          <div class="privacy-dot"></div>
+          No public profile
+        </div>
+        <div class="privacy-item">
+          <div class="privacy-dot"></div>
+          No recruiter marketplace
+        </div>
+        <div class="privacy-item">
+          <div class="privacy-dot"></div>
+          Your data stays yours
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 6. FINAL CTA ───────────────────────────────────── -->
+  <div class="container">
+    <div class="section final-wrap">
+      <div class="card final-card">
+        <h2>Start your private career engine.</h2>
+        <a href="/onboarding.html" class="btn-primary">Set up my profile</a>
+        <p class="final-note">Free. Private. 3 minutes.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FOOTER ─────────────────────────────────────────── -->
+  <div class="container">
+    <footer class="footer">
+      <div class="footer-row">
+        <span>© 2026 Envoy</span>
+        <div class="footer-links">
+          <a href="#">Privacy</a>
+          <a href="#">Terms</a>
+        </div>
+      </div>
+    </footer>
   </div>
 
 </body>

@@ -8,7 +8,10 @@ const fs = require('fs');
 const ai = require('./services/ai');
 
 const app = express();
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
+});
 const upload = multer({ dest: '/tmp/envoy/' });
 
 app.use(express.json({ limit: '10mb' }));

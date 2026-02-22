@@ -8,6 +8,7 @@ const fs = require('fs');
 const ai = require('./services/ai');
 
 const app = express();
+const SERVER_START = new Date();
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
@@ -554,6 +555,12 @@ app.get('/api/digest', async (req, res) => {
     const digest = await ai.generateDigest(stats, outreach, activeJobs);
     res.json({ digest });
   } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── VERSION ─────────────────────────────────────────────────────────────────
+
+app.get('/api/version', (req, res) => {
+  res.json({ started: SERVER_START.toISOString() });
 });
 
 // ─── START ───────────────────────────────────────────────────────────────────

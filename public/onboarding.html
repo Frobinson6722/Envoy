@@ -5,6 +5,174 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Envoy — Onboarding</title>
   <link rel="stylesheet" href="/css/style.css">
+  <style>
+    /* ── FEATURE TOUR STYLES ── */
+    .welcome-hero {
+      text-align: center;
+      padding: 32px 20px 40px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 32px;
+    }
+    .welcome-hero h2 {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 10px;
+      letter-spacing: -0.5px;
+    }
+    .welcome-hero p {
+      font-size: 15px;
+      color: var(--text-muted);
+      max-width: 560px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+    .wordmark {
+      display: inline-block;
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -1px;
+      margin-bottom: 16px;
+    }
+    .wordmark span:nth-child(1) { color: #4285f4; }
+    .wordmark span:nth-child(2) { color: #ea4335; }
+    .wordmark span:nth-child(3) { color: #fbbc05; }
+    .wordmark span:nth-child(4) { color: #34a853; }
+    .wordmark span:nth-child(5) { color: #4285f4; }
+    .wordmark span:nth-child(6) { color: #ea4335; }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 36px;
+    }
+    .feature-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      background: var(--bg-card);
+    }
+    .feature-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      margin-bottom: 12px;
+    }
+    .feature-card h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .feature-card p {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+    .feature-card ul {
+      margin-top: 8px;
+      padding-left: 16px;
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.8;
+    }
+    .icon-blue  { background: rgba(66,133,244,0.12); }
+    .icon-red   { background: rgba(234,67,53,0.12);  }
+    .icon-yellow{ background: rgba(251,188,5,0.12);  }
+    .icon-green { background: rgba(52,168,83,0.12);  }
+
+    .how-to-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 28px;
+    }
+    .how-to-section h3 {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+    .workflow-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .workflow-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .workflow-step:last-child { border-bottom: none; }
+    .step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .step-num.green  { background: #34a853; }
+    .step-num.red    { background: #ea4335; }
+    .step-num.yellow { background: #fbbc05; color: #202124; }
+    .workflow-step-body h4 {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 3px;
+    }
+    .workflow-step-body p {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .tip-chip {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 20px;
+      margin-top: 6px;
+      background: rgba(66,133,244,0.1);
+      color: var(--accent);
+    }
+
+    .cta-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 12px;
+    }
+    .cta-row p { font-size: 13px; color: var(--text-muted); max-width: 460px; line-height: 1.5; }
+
+    @media (max-width: 900px) {
+      .feature-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 600px) {
+      .feature-grid { grid-template-columns: 1fr; }
+      .cta-row { flex-direction: column; gap: 16px; align-items: flex-start; }
+    }
+  </style>
 </head>
 <body>
   <nav class="sidebar">
@@ -20,18 +188,200 @@
 
   <main class="main">
     <div class="page-header">
-      <h2>Profile Setup</h2>
-      <p>~90 minutes to a useful baseline. You control every piece of data.</p>
+      <h2>Onboarding</h2>
+      <p>Get to know Envoy, then set up your profile.</p>
     </div>
 
     <div class="steps">
-      <div class="step active" onclick="showStep(1)" id="step-tab-1">1. Profile</div>
+      <div class="step active" onclick="showStep(0)" id="step-tab-0">Welcome</div>
+      <div class="step" onclick="showStep(1)" id="step-tab-1">1. Profile</div>
       <div class="step" onclick="showStep(2)" id="step-tab-2">2. Preferences</div>
       <div class="step" onclick="showStep(3)" id="step-tab-3">3. Urgency</div>
     </div>
 
+    <!-- STEP 0: WELCOME / FEATURE TOUR -->
+    <div id="step-0">
+
+      <div class="welcome-hero">
+        <div class="wordmark">
+          <span>E</span><span>n</span><span>v</span><span>o</span><span>y</span>
+        </div>
+        <h2>Your Private Career Intelligence Engine</h2>
+        <p>Envoy learns what you actually want, surfaces high-conviction roles, and helps you run a disciplined, warm-path-first search — without sending your data to job boards or recruiters.</p>
+      </div>
+
+      <!-- FEATURE CARDS -->
+      <div class="card-title" style="margin-bottom:16px">What Envoy can do</div>
+      <div class="feature-grid">
+
+        <div class="feature-card">
+          <div class="feature-icon icon-blue">📋</div>
+          <h3>Job Feed</h3>
+          <p>Paste any role you find anywhere on the internet. Envoy analyzes it against your profile and tells you how to approach it — not just whether to apply.</p>
+          <ul>
+            <li>Add roles from LinkedIn, company sites, referrals</li>
+            <li>AI scores fit and recommends contact channel</li>
+            <li>Swipe right = interested, left = pass</li>
+            <li>Leave a voice note when you pass — it teaches the system</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon icon-red">📄</div>
+          <h3>Briefs</h3>
+          <p>A full intelligence brief on any role you're serious about. Know the company arc, why the role exists, and your specific thesis before you ever talk to anyone.</p>
+          <ul>
+            <li>Full Brief (500–800 words) for high-conviction targets</li>
+            <li>Lite Brief (200 words) for early screening calls</li>
+            <li>Authenticity score keeps language in your voice</li>
+            <li>You approve before anything leaves Envoy</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon icon-green">📝</div>
+          <h3>Materials</h3>
+          <p>Auto-generate a tailored resume and cover letter for each opportunity, built from your profile and the specific role — not a generic template.</p>
+          <ul>
+            <li>Tailored resume reordered for each role</li>
+            <li>Cover letter in your voice, not AI-speak</li>
+            <li>Edit in the Drafting Room before approving</li>
+            <li>Authenticity score flags anything that sounds off</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon icon-yellow">🤝</div>
+          <h3>Network</h3>
+          <p>Import your LinkedIn connections once. For any target company, instantly see who you know — and draft a warm outreach message to the right person.</p>
+          <ul>
+            <li>Upload Connections.csv from LinkedIn export</li>
+            <li>Find internal connections at any target company</li>
+            <li>AI drafts a warm intro message</li>
+            <li>You approve and send manually — no auto-send</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon icon-blue">📊</div>
+          <h3>Pipeline</h3>
+          <p>Track every opportunity from first look to offer. See your funnel, spot where deals stall, and get a monthly AI digest on what to double down on.</p>
+          <ul>
+            <li>8-stage funnel: Swiped Right → Offer</li>
+            <li>Brief and materials status at a glance</li>
+            <li>Move stages with one click + a quick note</li>
+            <li>Monthly performance digest with insights</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon icon-red">🧠</div>
+          <h3>Profile & Preferences</h3>
+          <p>The foundation everything else builds on. The Seven Dimensions interview teaches Envoy what you actually want — not just your skills, but what energizes you.</p>
+          <ul>
+            <li>Import from LinkedIn CSV (or fill manually)</li>
+            <li>Seven Dimensions: energy, culture, management, team, trajectory, comp, timing</li>
+            <li>Urgency setting changes how the whole system behaves</li>
+            <li>Update any time — system adapts immediately</li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- HOW TO USE IT -->
+      <div class="how-to-section">
+        <h3>How to use Envoy — the workflow</h3>
+        <div class="workflow-steps">
+
+          <div class="workflow-step">
+            <div class="step-num">1</div>
+            <div class="workflow-step-body">
+              <h4>Complete your profile setup (this onboarding)</h4>
+              <p>Fill in your background, answer the Seven Dimensions honestly, and set your urgency level. This is the intelligence layer — everything else runs on it. Budget ~30 minutes the first time.</p>
+              <span class="tip-chip">Start now → click "1. Profile" above</span>
+            </div>
+          </div>
+
+          <div class="workflow-step">
+            <div class="step-num yellow">2</div>
+            <div class="workflow-step-body">
+              <h4>Import your LinkedIn connections</h4>
+              <p>Go to the <strong>Network</strong> page and upload your Connections.csv. This unlocks warm-path routing for every role you add. You only do this once.</p>
+              <span class="tip-chip">LinkedIn → Settings → Data Privacy → Get a copy of your data</span>
+            </div>
+          </div>
+
+          <div class="workflow-step">
+            <div class="step-num green">3</div>
+            <div class="workflow-step-body">
+              <h4>Add your first 3–5 roles to the Job Feed</h4>
+              <p>Paste in any role you've seen or heard about — LinkedIn, company sites, referrals, anything. Envoy will analyze each one and show you a fit thesis + recommended contact channel within about 60 seconds.</p>
+              <span class="tip-chip">Job Feed → Add a Role → paste the full job description</span>
+            </div>
+          </div>
+
+          <div class="workflow-step">
+            <div class="step-num red">4</div>
+            <div class="workflow-step-body">
+              <h4>Swipe on each role</h4>
+              <p>Review the AI's fit analysis. Swipe right if you're interested (it enters your Pipeline). Swipe left to pass — leave a short note explaining why, so the system learns your real filters over time.</p>
+              <span class="tip-chip">Keyboard shortcut: ← Pass &nbsp;|&nbsp; → Interested</span>
+            </div>
+          </div>
+
+          <div class="workflow-step">
+            <div class="step-num">5</div>
+            <div class="workflow-step-body">
+              <h4>Generate a Brief for your top 2–3 targets</h4>
+              <p>Go to <strong>Briefs</strong> and generate a Full Brief for any role you're serious about. Read it, edit it in the Drafting Room, and approve it. This becomes the backbone of every outreach and conversation.</p>
+              <span class="tip-chip">Briefs → select role → Generate Brief → edit → Approve</span>
+            </div>
+          </div>
+
+          <div class="workflow-step">
+            <div class="step-num yellow">6</div>
+            <div class="workflow-step-body">
+              <h4>Find a warm path and draft your outreach</h4>
+              <p>On the <strong>Network</strong> page, select a target company and click "Find Connections." If you have someone inside, select them and draft a warm message. You copy and send it manually — Envoy never sends anything on your behalf.</p>
+              <span class="tip-chip">Network → Find Connections → Draft Message → Copy → Send yourself</span>
+            </div>
+          </div>
+
+          <div class="workflow-step">
+            <div class="step-num green">7</div>
+            <div class="workflow-step-body">
+              <h4>Generate tailored materials when ready to apply</h4>
+              <p>Go to <strong>Materials</strong>, select the role, and generate a tailored resume and cover letter. Review the authenticity score, edit anything that sounds off, then approve. Keep them in Envoy until you need to submit.</p>
+              <span class="tip-chip">Materials → select role → Generate → edit → Approve → Copy</span>
+            </div>
+          </div>
+
+          <div class="workflow-step">
+            <div class="step-num red">8</div>
+            <div class="workflow-step-body">
+              <h4>Track everything in Pipeline</h4>
+              <p>After each interaction — a reply, a screener call, an interview — go to <strong>Pipeline</strong> and move the stage forward. Add a note about what happened. At month-end, generate a Performance Digest to see your conversion rates and where to focus.</p>
+              <span class="tip-chip">Pipeline → Move → update stage + note → end of month: Generate Digest</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div class="cta-row">
+        <div>
+          <strong style="font-size:14px;color:var(--text)">Ready to get started?</strong>
+          <p style="margin-top:4px">Set up your profile. It's the foundation the whole system builds on — takes about 30 minutes and you can always come back to refine it.</p>
+        </div>
+        <button onclick="showStep(1)" class="btn btn-primary" style="white-space:nowrap">Start Profile Setup →</button>
+      </div>
+
+    </div>
+    <!-- END STEP 0 -->
+
     <!-- STEP 1: PROFILE -->
-    <div id="step-1">
+    <div id="step-1" style="display:none">
       <div class="card">
         <div class="card-title">Import from LinkedIn</div>
         <div class="alert alert-info">
@@ -233,7 +583,7 @@
     let selectedUrgency = '90_days';
 
     function showStep(n) {
-      [1,2,3].forEach(i => {
+      [0,1,2,3].forEach(i => {
         document.getElementById(`step-${i}`).style.display = i === n ? 'block' : 'none';
         document.getElementById(`step-tab-${i}`).classList.toggle('active', i === n);
       });

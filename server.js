@@ -558,7 +558,7 @@ app.get('/api/digest', async (req, res) => {
 
 // ─── START ───────────────────────────────────────────────────────────────────
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8000;
 initDb()
   .then(() => app.listen(PORT, () => console.log(`Envoy running on http://localhost:${PORT}`)))
   .catch(err => { console.error('DB init failed:', err); process.exit(1); });
